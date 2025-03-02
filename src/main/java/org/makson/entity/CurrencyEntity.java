@@ -2,13 +2,13 @@ package org.makson.entity;
 
 import java.util.Objects;
 
-public class Currency {
+public class CurrencyEntity {
     private Long id;
     private String code;
     private String fullName;
     private String sign;
 
-    public Currency(Long id, String code, String fullName, String sign) {
+    public CurrencyEntity(Long id, String code, String fullName, String sign) {
         this.id = id;
         this.code = code;
         this.fullName = fullName;
@@ -50,7 +50,7 @@ public class Currency {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        Currency currency = (Currency) o;
+        CurrencyEntity currency = (CurrencyEntity) o;
         return Objects.equals(id, currency.id) && Objects.equals(code, currency.code) && Objects.equals(fullName, currency.fullName) && Objects.equals(sign, currency.sign);
     }
 

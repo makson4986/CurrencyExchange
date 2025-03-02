@@ -5,11 +5,11 @@ import java.util.Objects;
 
 public class ExchangeRate {
     private Long id;
-    private Currency baseCurrencyId;
-    private Currency targetCurrencyId;
+    private CurrencyEntity baseCurrencyId;
+    private CurrencyEntity targetCurrencyId;
     private BigDecimal rate;
 
-    public ExchangeRate(Long id, Currency baseCurrencyId, Currency targetCurrencyId, BigDecimal rate) {
+    public ExchangeRate(Long id, CurrencyEntity baseCurrencyId, CurrencyEntity targetCurrencyId, BigDecimal rate) {
         this.id = id;
         this.baseCurrencyId = baseCurrencyId;
         this.targetCurrencyId = targetCurrencyId;
@@ -24,19 +24,19 @@ public class ExchangeRate {
         this.id = id;
     }
 
-    public Currency getBaseCurrencyId() {
+    public CurrencyEntity getBaseCurrencyId() {
         return baseCurrencyId;
     }
 
-    public void setBaseCurrencyId(Currency baseCurrencyId) {
+    public void setBaseCurrencyId(CurrencyEntity baseCurrencyId) {
         this.baseCurrencyId = baseCurrencyId;
     }
 
-    public Currency getTargetCurrencyId() {
+    public CurrencyEntity getTargetCurrencyId() {
         return targetCurrencyId;
     }
 
-    public void setTargetCurrencyId(Currency targetCurrencyId) {
+    public void setTargetCurrencyId(CurrencyEntity targetCurrencyId) {
         this.targetCurrencyId = targetCurrencyId;
     }
 

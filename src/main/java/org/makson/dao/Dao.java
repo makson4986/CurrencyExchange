@@ -6,4 +6,6 @@ public interface Dao<K, T> {
     List<T> findAll();
 
     void update(T entity);
+
+    T save(T entity);
 }
