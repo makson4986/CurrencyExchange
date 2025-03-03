@@ -1,20 +1,14 @@
 package org.makson.dto;
 
 public class CurrencyDto {
-    private final Long id;
     private final String name;
     private final String code;
     private final String sign;
 
-    public CurrencyDto(Long id, String name, String code, String sign) {
-        this.id = id;
+    public CurrencyDto(String name, String code, String sign) {
         this.name = name;
         this.code = code;
         this.sign = sign;
-    }
-
-    public Long getId() {
-        return id;
     }
 
     public String getName() {

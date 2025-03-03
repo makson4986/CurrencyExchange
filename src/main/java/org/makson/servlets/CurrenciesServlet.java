@@ -34,7 +34,7 @@ public class CurrenciesServlet extends HttpServlet {
 
         //TODO resp.setContentType("application/json"); и ниже, вынести в отд метод
 
-        CurrencyDto newCurrency = new CurrencyDto(null,
+        CurrencyDto newCurrency = new CurrencyDto(
                 req.getParameter("name"),
                 req.getParameter("code"),
                 req.getParameter("sign"));
