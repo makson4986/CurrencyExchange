@@ -4,7 +4,6 @@ import org.makson.dao.CurrencyDao;
 import org.makson.dto.CurrencyDto;
 import org.makson.entity.CurrencyEntity;
 
-import java.util.Currency;
 import java.util.List;
 
 public class CurrencyService {

@@ -22,7 +22,7 @@ public class CurrencyDao implements Dao<Long, CurrencyEntity> {
                 FROM currencies
                 """;
 
-        try (var connection = ConnectionManager.get();
+        try (var connection = ConnectionManager.open();
              var prepareStatement = connection.prepareStatement(sql)) {
             ResultSet resultSet = prepareStatement.executeQuery();
             List<CurrencyEntity> currencies = new ArrayList<>();
@@ -49,16 +49,21 @@ public class CurrencyDao implements Dao<Long, CurrencyEntity> {
                 VALUES (?, ?, ?)
                 """;
 
-        try (var connection = ConnectionManager.get();
+        try (var connection = ConnectionManager.open();
              var prepareStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             prepareStatement.setString(1, entity.getCode());
             prepareStatement.setString(2, entity.getFullName());
             prepareStatement.setString(3, entity.getSign());
 
-            int i = prepareStatement.executeUpdate();
+            prepareStatement.executeUpdate();
 
-            ResultSet generatedKeys = prepareStatement.getGeneratedKeys();
-            return buildCurrency(generatedKeys);
+            try (var generatedKeys = prepareStatement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    entity.setId(generatedKeys.getLong(1));
+                }
+            }
+
+            return entity;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

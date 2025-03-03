@@ -29,13 +29,15 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
+
+        //TODO resp.setContentType("application/json"); и ниже, вынести в отд метод
+
         CurrencyDto newCurrency = new CurrencyDto(null,
                 req.getParameter("name"),
                 req.getParameter("code"),
                 req.getParameter("sign"));
-
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
 
         try (var printWriter = resp.getWriter()) {
             printWriter.write(jsonMapper.dtoToJson(currencyService.save(newCurrency)));
