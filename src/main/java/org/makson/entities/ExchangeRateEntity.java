@@ -3,13 +3,13 @@ package org.makson.entities;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-public class ExchangeRate {
+public class ExchangeRateEntity {
     private Long id;
     private CurrencyEntity baseCurrencyId;
     private CurrencyEntity targetCurrencyId;
     private BigDecimal rate;
 
-    public ExchangeRate(Long id, CurrencyEntity baseCurrencyId, CurrencyEntity targetCurrencyId, BigDecimal rate) {
+    public ExchangeRateEntity(Long id, CurrencyEntity baseCurrencyId, CurrencyEntity targetCurrencyId, BigDecimal rate) {
         this.id = id;
         this.baseCurrencyId = baseCurrencyId;
         this.targetCurrencyId = targetCurrencyId;
@@ -51,7 +51,7 @@ public class ExchangeRate {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        ExchangeRate that = (ExchangeRate) o;
+        ExchangeRateEntity that = (ExchangeRateEntity) o;
         return Objects.equals(id, that.id) && Objects.equals(baseCurrencyId, that.baseCurrencyId) && Objects.equals(targetCurrencyId, that.targetCurrencyId) && Objects.equals(rate, that.rate);
     }
 

@@ -10,17 +10,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class CurrencyDao implements Dao<Long, CurrencyEntity> {
+public class CurrencyDao implements Dao<CurrencyEntity> {
     private static final CurrencyDao INSTANCE = new CurrencyDao();
-    private static final String FIND_ALL = """
+    private final String FIND_ALL = """
             SELECT id, code, full_name, sign
             FROM currencies
             """;
-    private static final String INSERT = """
+    private final String INSERT = """
             INSERT INTO currencies(code, full_name, sign)
             VALUES (?, ?, ?)
             """;
-    private static final String FIND_BY_CODE = FIND_ALL + "WHERE code = ?";
+    private final String FIND_BY_CODE = FIND_ALL + "WHERE code = ?";
 
     private CurrencyDao() {
     }

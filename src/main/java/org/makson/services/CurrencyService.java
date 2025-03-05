@@ -47,9 +47,9 @@ public class CurrencyService {
     public CurrencyResponseDto save(CurrencyRequestDto currencyDto) {
         CurrencyEntity newCurrency = currencyDao.save(new CurrencyEntity(
                 DEFAULT_CURRENCY_ID,
-                currencyDto.getCode(),
-                currencyDto.getName(),
-                currencyDto.getSign()));
+                currencyDto.code(),
+                currencyDto.name(),
+                currencyDto.sign()));
 
         return new CurrencyResponseDto(
                 newCurrency.getId(),
