@@ -5,7 +5,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.makson.dto.CurrencyDto;
+import org.makson.dto.CurrencyRequestDto;
+import org.makson.dto.CurrencyResponseDto;
 import org.makson.service.CurrencyService;
 import org.makson.utils.JsonMapper;
 
@@ -34,7 +35,7 @@ public class CurrenciesServlet extends HttpServlet {
 
         //TODO resp.setContentType("application/json"); и ниже, вынести в отд метод
 
-        CurrencyDto newCurrency = new CurrencyDto(
+        CurrencyRequestDto newCurrency = new CurrencyRequestDto(
                 req.getParameter("name"),
                 req.getParameter("code"),
                 req.getParameter("sign"));

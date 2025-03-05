@@ -8,22 +8,45 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class CurrencyDao implements Dao<Long, CurrencyEntity> {
     private static final CurrencyDao INSTANCE = new CurrencyDao();
+    private static final String FIND_ALL = """
+            SELECT id, code, full_name, sign
+            FROM currencies
+            """;
+    private static final String INSERT = """
+            INSERT INTO currencies(code, full_name, sign)
+            VALUES (?, ?, ?)
+            """;
+    private static final String FIND_BY_CODE = FIND_ALL + "WHERE code = ?";
 
     private CurrencyDao() {
     }
 
-    @Override
-    public List<CurrencyEntity> findAll() {
-        final String sql = """
-                SELECT id, code, full_name, sign
-                FROM currencies
-                """;
+    public Optional<CurrencyEntity> findByCode(String code) {
+        CurrencyEntity currency = null;
 
         try (var connection = ConnectionManager.open();
-             var prepareStatement = connection.prepareStatement(sql)) {
+             var prepareStatement = connection.prepareStatement(FIND_BY_CODE)) {
+            prepareStatement.setString(1, code);
+            ResultSet resultSet = prepareStatement.executeQuery();
+
+            if (resultSet.next()) {
+                currency = buildCurrency(resultSet);
+            }
+
+            return Optional.ofNullable(currency);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public List<CurrencyEntity> findAll() {
+        try (var connection = ConnectionManager.open();
+             var prepareStatement = connection.prepareStatement(FIND_ALL)) {
             ResultSet resultSet = prepareStatement.executeQuery();
             List<CurrencyEntity> currencies = new ArrayList<>();
 
@@ -38,19 +61,9 @@ public class CurrencyDao implements Dao<Long, CurrencyEntity> {
     }
 
     @Override
-    public void update(CurrencyEntity entity) {
-
-    }
-
-    @Override
     public CurrencyEntity save(CurrencyEntity entity) {
-        final String sql = """
-                INSERT INTO currencies(code, full_name, sign)
-                VALUES (?, ?, ?)
-                """;
-
         try (var connection = ConnectionManager.open();
-             var prepareStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             var prepareStatement = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS)) {
             prepareStatement.setString(1, entity.getCode());
             prepareStatement.setString(2, entity.getFullName());
             prepareStatement.setString(3, entity.getSign());

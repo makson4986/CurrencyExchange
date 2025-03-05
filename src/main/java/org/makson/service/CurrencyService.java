@@ -1,7 +1,9 @@
 package org.makson.service;
 
+import org.makson.CurrencyNotFoundException;
 import org.makson.dao.CurrencyDao;
-import org.makson.dto.CurrencyDto;
+import org.makson.dto.CurrencyRequestDto;
+import org.makson.dto.CurrencyResponseDto;
 import org.makson.entity.CurrencyEntity;
 
 import java.util.List;
@@ -14,9 +16,26 @@ public class CurrencyService {
     private CurrencyService() {
     }
 
-    public List<CurrencyEntity> findAll() {
+    public CurrencyResponseDto findByCode(String code) throws CurrencyNotFoundException {
+        var optionalCurrency = currencyDao.findByCode(code);
+
+        if (optionalCurrency.isPresent()) {
+            CurrencyEntity currency = optionalCurrency.get();
+            return new CurrencyResponseDto(
+                    currency.getId(),
+                    currency.getFullName(),
+                    currency.getCode(),
+                    currency.getSign()
+            );
+        } else {
+            throw new CurrencyNotFoundException("Currency is not found!");
+            //TODO exception
+        }
+    }
+
+    public List<CurrencyResponseDto> findAll() {
         return currencyDao.findAll().stream()
-                .map(currency -> new CurrencyEntity(
+                .map(currency -> new CurrencyResponseDto(
                         currency.getId(),
                         currency.getFullName(),
                         currency.getCode(),
@@ -25,14 +44,15 @@ public class CurrencyService {
                 .toList();
     }
 
-    public CurrencyDto save(CurrencyDto currencyDto) {
+    public CurrencyResponseDto save(CurrencyRequestDto currencyDto) {
         CurrencyEntity newCurrency = currencyDao.save(new CurrencyEntity(
                 DEFAULT_CURRENCY_ID,
                 currencyDto.getCode(),
                 currencyDto.getName(),
                 currencyDto.getSign()));
 
-        return new CurrencyDto(
+        return new CurrencyResponseDto(
+                newCurrency.getId(),
                 newCurrency.getFullName(),
                 newCurrency.getCode(),
                 newCurrency.getSign());
