@@ -6,8 +6,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.makson.dto.CurrencyRequestDto;
-import org.makson.dto.CurrencyResponseDto;
-import org.makson.service.CurrencyService;
+import org.makson.services.CurrencyService;
 import org.makson.utils.JsonMapper;
 
 import java.io.IOException;

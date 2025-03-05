@@ -1,6 +1,6 @@
 package org.makson.dao;
 
-import org.makson.entity.CurrencyEntity;
+import org.makson.entities.CurrencyEntity;
 import org.makson.utils.ConnectionManager;
 
 import java.sql.ResultSet;

@@ -1,4 +1,4 @@
-package org.makson.entity;
+package org.makson.entities;
 
 import java.math.BigDecimal;
 import java.util.Objects;

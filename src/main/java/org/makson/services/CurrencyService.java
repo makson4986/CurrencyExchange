@@ -1,10 +1,10 @@
-package org.makson.service;
+package org.makson.services;
 
 import org.makson.CurrencyNotFoundException;
 import org.makson.dao.CurrencyDao;
 import org.makson.dto.CurrencyRequestDto;
 import org.makson.dto.CurrencyResponseDto;
-import org.makson.entity.CurrencyEntity;
+import org.makson.entities.CurrencyEntity;
 
 import java.util.List;
 
