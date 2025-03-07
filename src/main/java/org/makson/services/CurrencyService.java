@@ -29,7 +29,7 @@ public class CurrencyService {
             );
         } else {
             throw new CurrencyNotFoundException("Currency is not found!");
-            //TODO exception
+            //TODO exception надо свое или нет
         }
     }
 

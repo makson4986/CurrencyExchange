@@ -82,17 +82,13 @@ public class CurrencyDao implements Dao<CurrencyEntity> {
         }
     }
 
-    private CurrencyEntity buildCurrency(ResultSet resultSet) {
-        try {
-            return new CurrencyEntity(
-                    resultSet.getLong("id"),
-                    resultSet.getString("code"),
-                    resultSet.getString("full_name"),
-                    resultSet.getString("sign")
-            );
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+    private CurrencyEntity buildCurrency(ResultSet resultSet) throws SQLException {
+        return new CurrencyEntity(
+                resultSet.getLong("id"),
+                resultSet.getString("code"),
+                resultSet.getString("full_name"),
+                resultSet.getString("sign")
+        );
     }
 
     public static CurrencyDao getInstance() {

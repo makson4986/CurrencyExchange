@@ -4,6 +4,6 @@ import org.makson.entities.CurrencyEntity;
 
 import java.math.BigDecimal;
 
-public record ExchangeRateRequestDto(CurrencyEntity baseCurrency, CurrencyEntity targetCurrency,
+public record ExchangeRateRequestDto(String baseCurrencyCode, String  targetCurrencyCode,
                                      BigDecimal rate) {
 }
