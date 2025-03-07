@@ -1,11 +1,12 @@
 package org.makson.services;
 
-import org.makson.CurrencyNotFoundException;
+import org.makson.exception.CurrencyNotFoundException;
 import org.makson.dao.CurrencyDao;
 import org.makson.dao.ExchangeRateDao;
 import org.makson.dto.ExchangeRateRequestDto;
 import org.makson.dto.ExchangeRateResponseDto;
 import org.makson.entities.ExchangeRateEntity;
+import org.makson.exception.ExchangeRateNotFoundException;
 
 import java.util.List;
 
@@ -16,6 +17,26 @@ public class ExchangeRateService {
     private final Long DEFAULT_EXCHANGE_RATE_ID = 0L;
 
     private ExchangeRateService() {
+    }
+
+    public ExchangeRateResponseDto findByExchangeRate(String baseCurrencyCode, String targetCurrencyCode) throws CurrencyNotFoundException, ExchangeRateNotFoundException {
+        var optionalExchangeRate = exchangeRateDao.findByExchangeRate(baseCurrencyCode, targetCurrencyCode);
+
+        if (optionalExchangeRate.isPresent()) {
+            ExchangeRateEntity exchangeRate = optionalExchangeRate.get();
+            try {
+                return new ExchangeRateResponseDto(
+                        exchangeRate.getId(),
+                        exchangeRate.getBaseCurrency(),
+                        exchangeRate.getTargetCurrency(),
+                        exchangeRate.getRate()
+                );
+            } catch (NullPointerException e) {
+                throw new CurrencyNotFoundException(e);
+            }
+        } else {
+            throw new ExchangeRateNotFoundException();
+        }
     }
 
     public List<ExchangeRateResponseDto> findAll() {
@@ -48,7 +69,7 @@ public class ExchangeRateService {
                     exchangeRate.getRate()
             );
         } else {
-            throw new CurrencyNotFoundException("Currency is not found!");
+            throw new CurrencyNotFoundException();
         }
     }
 

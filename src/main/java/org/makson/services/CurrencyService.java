@@ -1,6 +1,6 @@
 package org.makson.services;
 
-import org.makson.CurrencyNotFoundException;
+import org.makson.exception.CurrencyNotFoundException;
 import org.makson.dao.CurrencyDao;
 import org.makson.dto.CurrencyRequestDto;
 import org.makson.dto.CurrencyResponseDto;
@@ -28,7 +28,7 @@ public class CurrencyService {
                     currency.getSign()
             );
         } else {
-            throw new CurrencyNotFoundException("Currency is not found!");
+            throw new CurrencyNotFoundException();
             //TODO exception надо свое или нет
         }
     }

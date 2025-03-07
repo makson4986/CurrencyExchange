@@ -1,15 +1,14 @@
 package org.makson.dao;
 
-import org.makson.CurrencyNotFoundException;
 import org.makson.entities.ExchangeRateEntity;
 import org.makson.utils.ConnectionManager;
 
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ExchangeRateDao implements Dao<ExchangeRateEntity> {
     private static final ExchangeRateDao INSTANCE = new ExchangeRateDao();
@@ -24,7 +23,7 @@ public class ExchangeRateDao implements Dao<ExchangeRateEntity> {
             JOIN
                 currencies c1 ON er.base_currency_id = c1.id
             JOIN
-                currencies c2 ON er.target_currency_id = c2.id;
+                currencies c2 ON er.target_currency_id = c2.id
             """;
 
     private final String INSERT = """
@@ -32,9 +31,33 @@ public class ExchangeRateDao implements Dao<ExchangeRateEntity> {
             VALUES (?, ?, ?)
             """;
 
+    private final String FIND_BY_EXCHANGE_RATE = FIND_ALL + "WHERE c1.code = ? and c2.code = ?";
+
     private ExchangeRateDao() {
 
     }
+
+    public Optional<ExchangeRateEntity> findByExchangeRate(String baseCurrencyCode, String targetCurrencyCode) {
+        ExchangeRateEntity exchangeRateEntity = null;
+
+
+        try (var connection = ConnectionManager.open();
+             var prepareStatement = connection.prepareStatement(FIND_BY_EXCHANGE_RATE)) {
+            prepareStatement.setString(1, baseCurrencyCode);
+            prepareStatement.setString(2, targetCurrencyCode);
+
+            ResultSet resultSet = prepareStatement.executeQuery();
+
+            if (resultSet.next()) {
+                exchangeRateEntity = buildExchangeRate(resultSet);
+            }
+
+            return Optional.ofNullable(exchangeRateEntity);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     @Override
     public List<ExchangeRateEntity> findAll() {
@@ -76,11 +99,10 @@ public class ExchangeRateDao implements Dao<ExchangeRateEntity> {
     }
 
     private ExchangeRateEntity buildExchangeRate(ResultSet resultSet) throws SQLException {
-        //Результат CurrencyDao.findByCode в данном случае никогда не будет пустым
         return new ExchangeRateEntity(
                 resultSet.getLong("id"),
-                CurrencyDao.getInstance().findByCode(resultSet.getString("base_currency_code")).get(),
-                CurrencyDao.getInstance().findByCode(resultSet.getString("target_currency_code")).get(),
+                CurrencyDao.getInstance().findByCode(resultSet.getString("base_currency_code")).orElse(null),
+                CurrencyDao.getInstance().findByCode(resultSet.getString("target_currency_code")).orElse(null),
                 resultSet.getBigDecimal("rate")
         );
     }
