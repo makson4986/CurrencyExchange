@@ -42,14 +42,16 @@ public class ExchangeRateServlet extends HttpServlet {
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("application/json");
         resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        String string = req.getReader().readLine();
+        String string = req.getReader().readLine().split("=")[1];
 
-        String rate = req.getParameter("rate");
+        BigDecimal rate = new BigDecimal(string);
 
-//        BigDecimal rate = new BigDecimal(req.getParameter("rate"));
+        String baseCurrencyCode = req.getPathInfo().substring(1, 4);
+        String targetCurrencyCode = req.getPathInfo().substring(4);
+
 
         try (var printWriter = resp.getWriter()) {
-            printWriter.write(jsonMapper.dtoToJson(exchangeRateService.update(new BigDecimal(1))));
+            printWriter.write(jsonMapper.dtoToJson(exchangeRateService.update(baseCurrencyCode, targetCurrencyCode, rate)));
         }
     }
 }

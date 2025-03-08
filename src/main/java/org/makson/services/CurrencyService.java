@@ -1,5 +1,6 @@
 package org.makson.services;
 
+import org.makson.exception.CurrencyAlreadyExistsException;
 import org.makson.exception.CurrencyNotFoundException;
 import org.makson.dao.CurrencyDao;
 import org.makson.dto.CurrencyRequestDto;
@@ -7,6 +8,7 @@ import org.makson.dto.CurrencyResponseDto;
 import org.makson.entities.CurrencyEntity;
 
 import java.util.List;
+import java.util.Optional;
 
 public class CurrencyService {
     private static final CurrencyService INSTANCE = new CurrencyService();
@@ -44,18 +46,22 @@ public class CurrencyService {
                 .toList();
     }
 
-    public CurrencyResponseDto save(CurrencyRequestDto currencyDto) {
-        CurrencyEntity newCurrency = currencyDao.save(new CurrencyEntity(
+    public CurrencyResponseDto save(CurrencyRequestDto currencyDto) throws CurrencyAlreadyExistsException {
+        var newCurrency = currencyDao.save(new CurrencyEntity(
                 DEFAULT_CURRENCY_ID,
                 currencyDto.code(),
                 currencyDto.name(),
                 currencyDto.sign()));
 
-        return new CurrencyResponseDto(
-                newCurrency.getId(),
-                newCurrency.getFullName(),
-                newCurrency.getCode(),
-                newCurrency.getSign());
+        if (newCurrency.isPresent()) {
+            return new CurrencyResponseDto(
+                    newCurrency.get().getId(),
+                    newCurrency.get().getFullName(),
+                    newCurrency.get().getCode(),
+                    newCurrency.get().getSign());
+        } else {
+            throw new CurrencyAlreadyExistsException();
+        }
     }
 
 

@@ -61,7 +61,7 @@ public class CurrencyDao implements Dao<CurrencyEntity> {
     }
 
     @Override
-    public CurrencyEntity save(CurrencyEntity entity) {
+    public Optional<CurrencyEntity> save(CurrencyEntity entity) {
         try (var connection = ConnectionManager.open();
              var prepareStatement = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS)) {
             prepareStatement.setString(1, entity.getCode());
@@ -76,9 +76,9 @@ public class CurrencyDao implements Dao<CurrencyEntity> {
                 }
             }
 
-            return entity;
+            return Optional.of(entity);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            return Optional.empty();
         }
     }
 
