@@ -31,7 +31,6 @@ public class CurrenciesServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("application/json");
         resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
-
         //TODO resp.setContentType("application/json"); и ниже, вынести в отд метод
 
         CurrencyRequestDto newCurrency = new CurrencyRequestDto(

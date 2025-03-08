@@ -3,6 +3,7 @@ package org.makson.dao;
 import org.makson.entities.ExchangeRateEntity;
 import org.makson.utils.ConnectionManager;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -25,13 +26,16 @@ public class ExchangeRateDao implements Dao<ExchangeRateEntity> {
             JOIN
                 currencies c2 ON er.target_currency_id = c2.id
             """;
-
     private final String INSERT = """
             INSERT INTO exchange_rates(base_currency_id, target_currency_id, rate)
             VALUES (?, ?, ?)
             """;
-
     private final String FIND_BY_EXCHANGE_RATE = FIND_ALL + "WHERE c1.code = ? and c2.code = ?";
+    private final String UPDATE = """
+            UPDATE exchange_rates
+            SET rate = ?
+            WHERE base_currency_id = ? and target_currency_id = ?
+            """;
 
     private ExchangeRateDao() {
 
@@ -39,7 +43,6 @@ public class ExchangeRateDao implements Dao<ExchangeRateEntity> {
 
     public Optional<ExchangeRateEntity> findByExchangeRate(String baseCurrencyCode, String targetCurrencyCode) {
         ExchangeRateEntity exchangeRateEntity = null;
-
 
         try (var connection = ConnectionManager.open();
              var prepareStatement = connection.prepareStatement(FIND_BY_EXCHANGE_RATE)) {
@@ -57,7 +60,6 @@ public class ExchangeRateDao implements Dao<ExchangeRateEntity> {
             throw new RuntimeException(e);
         }
     }
-
 
     @Override
     public List<ExchangeRateEntity> findAll() {
@@ -93,6 +95,22 @@ public class ExchangeRateDao implements Dao<ExchangeRateEntity> {
             }
 
             return entity;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public ExchangeRateEntity update(BigDecimal rate) {
+
+        try (var connection = ConnectionManager.open();
+             var prepareStatement = connection.prepareStatement(FIND_ALL)) {
+            prepareStatement.setBigDecimal(1, rate);
+            prepareStatement.executeUpdate();
+
+            try (var generatedKeys = prepareStatement.getGeneratedKeys()) {
+                generatedKeys.next();
+                return buildExchangeRate(generatedKeys);
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

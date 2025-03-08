@@ -8,6 +8,7 @@ import org.makson.dto.ExchangeRateResponseDto;
 import org.makson.entities.ExchangeRateEntity;
 import org.makson.exception.ExchangeRateNotFoundException;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class ExchangeRateService {
@@ -71,6 +72,17 @@ public class ExchangeRateService {
         } else {
             throw new CurrencyNotFoundException();
         }
+    }
+
+    public ExchangeRateResponseDto update(BigDecimal rate) {
+        ExchangeRateEntity updatedExchangeRate = exchangeRateDao.update(rate);
+
+        return new ExchangeRateResponseDto(
+                updatedExchangeRate.getId(),
+                updatedExchangeRate.getBaseCurrency(),
+                updatedExchangeRate.getTargetCurrency(),
+                updatedExchangeRate.getRate()
+        );
     }
 
     public static ExchangeRateService getInstance() {
