@@ -24,13 +24,17 @@ public class CurrencyServlet extends HttpServlet {
         resp.setContentType("application/json");
         resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
 
+        //TODO resp.setContentType("application/json");
+        //        resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        // както вынести
+
         String currencyCode = req.getPathInfo().substring(1);
 
         if (currencyCode.isBlank()) {
             resp.setStatus(400);
             objectMapper.writeValue(resp.getWriter(), new ErrorResponseDto("Currency code is missing in the address"));
             return;
-        } else if (!currencyCode.equals(currencyCode.toUpperCase()) || currencyCode.length() > 3) {
+        } else if (!currencyCode.equals(currencyCode.toUpperCase()) || currencyCode.length() !=3) {
             resp.setStatus(400);
             objectMapper.writeValue(resp.getWriter(), new ErrorResponseDto("The currency does not comply with ISO 4217 standard"));
             return;

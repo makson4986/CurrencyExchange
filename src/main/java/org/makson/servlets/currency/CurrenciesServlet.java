@@ -56,11 +56,7 @@ public class CurrenciesServlet extends HttpServlet {
             return;
         }
 
-        CurrencyRequestDto newCurrency = new CurrencyRequestDto(
-                name,
-                code,
-                sign
-        );
+        CurrencyRequestDto newCurrency = new CurrencyRequestDto(name, code, sign);
 
         try {
             resp.setStatus(201);

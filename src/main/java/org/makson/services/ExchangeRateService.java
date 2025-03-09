@@ -1,14 +1,14 @@
 package org.makson.services;
 
-import org.makson.dto.ConvertCurrencyRequestDto;
-import org.makson.dto.ConvertCurrencyResponseDto;
-import org.makson.entities.CurrencyEntity;
-import org.makson.exception.CurrencyNotFoundException;
 import org.makson.dao.CurrencyDao;
 import org.makson.dao.ExchangeRateDao;
+import org.makson.dto.ConvertCurrencyRequestDto;
+import org.makson.dto.ConvertCurrencyResponseDto;
 import org.makson.dto.ExchangeRateRequestDto;
 import org.makson.dto.ExchangeRateResponseDto;
+import org.makson.entities.CurrencyEntity;
 import org.makson.entities.ExchangeRateEntity;
+import org.makson.exception.CurrencyNotFoundException;
 import org.makson.exception.ExchangeRateAlreadyExistsException;
 import org.makson.exception.ExchangeRateNotFoundException;
 
@@ -16,7 +16,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 
 public class ExchangeRateService {
     private static final ExchangeRateService INSTANCE = new ExchangeRateService();
@@ -26,7 +25,7 @@ public class ExchangeRateService {
     private ExchangeRateService() {
     }
 
-    public ExchangeRateResponseDto findByExchangeRate(String baseCurrencyCode, String targetCurrencyCode) throws ExchangeRateNotFoundException {
+    public ExchangeRateResponseDto findByExchangeRate(String baseCurrencyCode, String targetCurrencyCode) throws ExchangeRateNotFoundException, SQLException {
         ExchangeRateEntity exchangeRate = exchangeRateDao.findByExchangeRate(baseCurrencyCode, targetCurrencyCode);
         return new ExchangeRateResponseDto(
                 exchangeRate.getId(),
@@ -36,7 +35,7 @@ public class ExchangeRateService {
         );
     }
 
-    public List<ExchangeRateResponseDto> findAll() {
+    public List<ExchangeRateResponseDto> findAll() throws SQLException {
         return exchangeRateDao.findAll().stream()
                 .map(exchangeRate -> new ExchangeRateResponseDto(
                         exchangeRate.getId(),
@@ -70,7 +69,7 @@ public class ExchangeRateService {
                     exchangeRateRequestDto.rate()
             ));
         } catch (CurrencyNotFoundException e) {
-            throw new RuntimeException(e);
+            throw new ExchangeRateNotFoundException();
         }
 
         return new ExchangeRateResponseDto(
@@ -81,7 +80,7 @@ public class ExchangeRateService {
         );
     }
 
-    public ConvertCurrencyResponseDto convertCurrency(ConvertCurrencyRequestDto convertCurrencyRequestDto) throws ExchangeRateNotFoundException {
+    public ConvertCurrencyResponseDto convertCurrency(ConvertCurrencyRequestDto convertCurrencyRequestDto) throws ExchangeRateNotFoundException, SQLException {
         CurrencyEntity baseCurrency;
         CurrencyEntity targetCurrency;
         BigDecimal rate;
