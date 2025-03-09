@@ -8,6 +8,10 @@ public class CurrencyEntity {
     private String fullName;
     private String sign;
 
+    public CurrencyEntity(String code, String fullName, String sign) {
+        this(-1L, code, fullName, sign);
+    }
+
     public CurrencyEntity(Long id, String code, String fullName, String sign) {
         this.id = id;
         this.code = code;

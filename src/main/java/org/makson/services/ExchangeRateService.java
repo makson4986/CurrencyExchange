@@ -1,5 +1,7 @@
 package org.makson.services;
 
+import org.makson.dto.ConvertCurrencyRequestDto;
+import org.makson.dto.ConvertCurrencyResponseDto;
 import org.makson.entities.CurrencyEntity;
 import org.makson.exception.CurrencyNotFoundException;
 import org.makson.dao.CurrencyDao;
@@ -11,6 +13,7 @@ import org.makson.exception.ExchangeRateAlreadyExistsException;
 import org.makson.exception.ExchangeRateNotFoundException;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,7 +21,6 @@ public class ExchangeRateService {
     private static final ExchangeRateService INSTANCE = new ExchangeRateService();
     private final ExchangeRateDao exchangeRateDao = ExchangeRateDao.getInstance();
     private final CurrencyDao currencyDao = CurrencyDao.getInstance();
-    private final Long DEFAULT_EXCHANGE_RATE_ID = 0L;
 
     private ExchangeRateService() {
     }
@@ -46,7 +48,6 @@ public class ExchangeRateService {
 
     public ExchangeRateResponseDto save(ExchangeRateRequestDto exchangeRateRequestDto) throws CurrencyNotFoundException, ExchangeRateAlreadyExistsException {
         ExchangeRateEntity newExchangeRate = exchangeRateDao.save(new ExchangeRateEntity(
-                DEFAULT_EXCHANGE_RATE_ID,
                 currencyDao.findByCode(exchangeRateRequestDto.baseCurrencyCode()),
                 currencyDao.findByCode(exchangeRateRequestDto.targetCurrencyCode()),
                 exchangeRateRequestDto.rate()
@@ -61,7 +62,6 @@ public class ExchangeRateService {
 
     public ExchangeRateResponseDto update(ExchangeRateRequestDto exchangeRateRequestDto) throws ExchangeRateNotFoundException {
         ExchangeRateEntity updatedExchangeRate = exchangeRateDao.update(new ExchangeRateEntity(
-                DEFAULT_EXCHANGE_RATE_ID,
                 currencyDao.findByCode(exchangeRateRequestDto.baseCurrencyCode()),
                 currencyDao.findByCode(exchangeRateRequestDto.targetCurrencyCode()),
                 exchangeRateRequestDto.rate()
@@ -73,6 +73,42 @@ public class ExchangeRateService {
                 updatedExchangeRate.getTargetCurrency(),
                 updatedExchangeRate.getRate()
         );
+    }
+
+    public ConvertCurrencyResponseDto convertCurrency(ConvertCurrencyRequestDto convertCurrencyRequestDto) throws ExchangeRateNotFoundException {
+        CurrencyEntity baseCurrency;
+        CurrencyEntity targetCurrency;
+        BigDecimal rate;
+
+        try {
+            var exchangeRate = findByExchangeRate(convertCurrencyRequestDto.baseCurrencyCode(), convertCurrencyRequestDto.targetCurrencyCode());
+            baseCurrency = exchangeRate.baseCurrency();
+            targetCurrency = exchangeRate.targetCurrency();
+            rate = exchangeRate.rate();
+        } catch (ExchangeRateNotFoundException _) {
+            try {
+                var exchangeRate = findByExchangeRate(convertCurrencyRequestDto.targetCurrencyCode(), convertCurrencyRequestDto.baseCurrencyCode());
+                baseCurrency = exchangeRate.baseCurrency();
+                targetCurrency = exchangeRate.targetCurrency();
+                rate = new BigDecimal(1).divide(exchangeRate.rate(), 6, RoundingMode.HALF_UP);
+            } catch (ExchangeRateNotFoundException _) {
+                var exchangeRate1 = findByExchangeRate("USD", convertCurrencyRequestDto.baseCurrencyCode());
+                var exchangeRate2 = findByExchangeRate("USD", convertCurrencyRequestDto.targetCurrencyCode());
+                baseCurrency = exchangeRate1.targetCurrency();
+                targetCurrency = exchangeRate2.targetCurrency();
+                rate = exchangeRate2.rate().divide(exchangeRate1.rate(), 6, RoundingMode.HALF_UP);
+            }
+        }
+
+        BigDecimal amount = convertCurrencyRequestDto.amount();
+        return new ConvertCurrencyResponseDto(
+                baseCurrency,
+                targetCurrency,
+                rate,
+                amount,
+                rate.multiply(amount)
+        );
+
     }
 
     public static ExchangeRateService getInstance() {

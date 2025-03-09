@@ -9,6 +9,10 @@ public class ExchangeRateEntity {
     private CurrencyEntity targetCurrency;
     private BigDecimal rate;
 
+    public ExchangeRateEntity(CurrencyEntity baseCurrency, CurrencyEntity targetCurrency, BigDecimal rate) {
+        this(-1L, baseCurrency, targetCurrency, rate);
+    }
+
     public ExchangeRateEntity(Long id, CurrencyEntity baseCurrency, CurrencyEntity targetCurrency, BigDecimal rate) {
         this.id = id;
         this.baseCurrency = baseCurrency;
