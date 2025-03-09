@@ -2,6 +2,7 @@ package org.makson.dao;
 
 import org.makson.entities.ExchangeRateEntity;
 import org.makson.exception.CurrencyNotFoundException;
+import org.makson.exception.ExchangeRateAlreadyExistsException;
 import org.makson.exception.ExchangeRateNotFoundException;
 import org.makson.utils.ConnectionManager;
 
@@ -52,10 +53,7 @@ public class ExchangeRateDao implements Dao<ExchangeRateEntity> {
 
     }
 
-    public Optional<ExchangeRateEntity> findByExchangeRate(String baseCurrencyCode, String targetCurrencyCode) {
-        ExchangeRateEntity exchangeRateEntity = null;
-
-
+    public ExchangeRateEntity findByExchangeRate(String baseCurrencyCode, String targetCurrencyCode) throws ExchangeRateNotFoundException {
         try (var connection = ConnectionManager.open();
              var prepareStatement = connection.prepareStatement(FIND_BY_EXCHANGE_RATE)) {
             prepareStatement.setString(1, baseCurrencyCode);
@@ -64,10 +62,10 @@ public class ExchangeRateDao implements Dao<ExchangeRateEntity> {
             ResultSet resultSet = prepareStatement.executeQuery();
 
             if (resultSet.next()) {
-                exchangeRateEntity = buildExchangeRate(resultSet);
+                return buildExchangeRate(resultSet);
             }
 
-            return Optional.ofNullable(exchangeRateEntity);
+            throw new ExchangeRateNotFoundException();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -92,7 +90,7 @@ public class ExchangeRateDao implements Dao<ExchangeRateEntity> {
     }
 
     @Override
-    public Optional<ExchangeRateEntity> save(ExchangeRateEntity entity) {
+    public ExchangeRateEntity save(ExchangeRateEntity entity) throws ExchangeRateAlreadyExistsException {
         try (var connection = ConnectionManager.open();
              var prepareStatement = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS)) {
             prepareStatement.setLong(1, entity.getBaseCurrency().getId());
@@ -104,54 +102,41 @@ public class ExchangeRateDao implements Dao<ExchangeRateEntity> {
             try (var generatedKeys = prepareStatement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     entity.setId(generatedKeys.getLong(1));
+                    return entity;
                 }
             }
 
-            return Optional.of(entity);
+            throw new ExchangeRateAlreadyExistsException();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public Optional<ExchangeRateEntity> update(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
+    public ExchangeRateEntity update(ExchangeRateEntity exchangeRateEntity) throws ExchangeRateNotFoundException {
+        String baseCurrencyCode = exchangeRateEntity.getBaseCurrency().getCode();
+        String targetCurrencyCode = exchangeRateEntity.getTargetCurrency().getCode();
+
         try (var connection = ConnectionManager.open();
              var prepareStatement = connection.prepareStatement(UPDATE)) {
-            prepareStatement.setBigDecimal(1, rate);
+            prepareStatement.setBigDecimal(1, exchangeRateEntity.getRate());
             prepareStatement.setString(2, baseCurrencyCode);
             prepareStatement.setString(3, targetCurrencyCode);
 
             if (prepareStatement.executeUpdate() > 0) {
                 return findByExchangeRate(baseCurrencyCode, targetCurrencyCode);
-            } else {
-                return Optional.empty();
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
-    public ExchangeRateEntity update(BigDecimal rate) {
-
-        try (var connection = ConnectionManager.open();
-             var prepareStatement = connection.prepareStatement(FIND_ALL)) {
-            prepareStatement.setBigDecimal(1, rate);
-            prepareStatement.executeUpdate();
-
-            try (var generatedKeys = prepareStatement.getGeneratedKeys()) {
-                generatedKeys.next();
-                return buildExchangeRate(generatedKeys);
-            }
+            throw new ExchangeRateNotFoundException();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
     private ExchangeRateEntity buildExchangeRate(ResultSet resultSet) throws SQLException {
-        //CurrencyDao.findByCode в данном методе всегда возвращает не пустой optional
         return new ExchangeRateEntity(
                 resultSet.getLong("id"),
-                CurrencyDao.getInstance().findByCode(resultSet.getString("base_currency_code")).get(),
-                CurrencyDao.getInstance().findByCode(resultSet.getString("target_currency_code")).get(),
+                CurrencyDao.getInstance().findByCode(resultSet.getString("base_currency_code")),
+                CurrencyDao.getInstance().findByCode(resultSet.getString("target_currency_code")),
                 resultSet.getBigDecimal("rate")
         );
     }

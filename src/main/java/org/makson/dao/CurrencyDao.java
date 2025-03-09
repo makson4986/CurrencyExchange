@@ -1,6 +1,8 @@
 package org.makson.dao;
 
 import org.makson.entities.CurrencyEntity;
+import org.makson.exception.CurrencyAlreadyExistsException;
+import org.makson.exception.CurrencyNotFoundException;
 import org.makson.utils.ConnectionManager;
 
 import java.sql.ResultSet;
@@ -25,19 +27,17 @@ public class CurrencyDao implements Dao<CurrencyEntity> {
     private CurrencyDao() {
     }
 
-    public Optional<CurrencyEntity> findByCode(String code) {
-        CurrencyEntity currency = null;
-
+    public CurrencyEntity findByCode(String code) throws CurrencyNotFoundException {
         try (var connection = ConnectionManager.open();
              var prepareStatement = connection.prepareStatement(FIND_BY_CODE)) {
             prepareStatement.setString(1, code);
             ResultSet resultSet = prepareStatement.executeQuery();
 
             if (resultSet.next()) {
-                currency = buildCurrency(resultSet);
+                return buildCurrency(resultSet);
             }
 
-            return Optional.ofNullable(currency);
+            throw new CurrencyNotFoundException();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -61,7 +61,7 @@ public class CurrencyDao implements Dao<CurrencyEntity> {
     }
 
     @Override
-    public Optional<CurrencyEntity> save(CurrencyEntity entity) {
+    public CurrencyEntity save(CurrencyEntity entity) throws CurrencyAlreadyExistsException {
         try (var connection = ConnectionManager.open();
              var prepareStatement = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS)) {
             prepareStatement.setString(1, entity.getCode());
@@ -73,12 +73,13 @@ public class CurrencyDao implements Dao<CurrencyEntity> {
             try (var generatedKeys = prepareStatement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     entity.setId(generatedKeys.getLong(1));
+                    return entity;
                 }
             }
 
-            return Optional.of(entity);
+            throw new CurrencyAlreadyExistsException();
         } catch (SQLException e) {
-            return Optional.empty();
+            throw new RuntimeException(e);
         }
     }
 

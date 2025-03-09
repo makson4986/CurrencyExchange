@@ -19,20 +19,13 @@ public class CurrencyService {
     }
 
     public CurrencyResponseDto findByCode(String code) throws CurrencyNotFoundException {
-        var optionalCurrency = currencyDao.findByCode(code);
-
-        if (optionalCurrency.isPresent()) {
-            CurrencyEntity currency = optionalCurrency.get();
-            return new CurrencyResponseDto(
-                    currency.getId(),
-                    currency.getFullName(),
-                    currency.getCode(),
-                    currency.getSign()
-            );
-        } else {
-            throw new CurrencyNotFoundException();
-            //TODO exception надо свое или нет
-        }
+        CurrencyEntity currency = currencyDao.findByCode(code);
+        return new CurrencyResponseDto(
+                currency.getId(),
+                currency.getFullName(),
+                currency.getCode(),
+                currency.getSign()
+        );
     }
 
     public List<CurrencyResponseDto> findAll() {
@@ -47,21 +40,17 @@ public class CurrencyService {
     }
 
     public CurrencyResponseDto save(CurrencyRequestDto currencyDto) throws CurrencyAlreadyExistsException {
-        var newCurrency = currencyDao.save(new CurrencyEntity(
+        CurrencyEntity newCurrency = currencyDao.save(new CurrencyEntity(
                 DEFAULT_CURRENCY_ID,
                 currencyDto.code(),
                 currencyDto.name(),
                 currencyDto.sign()));
 
-        if (newCurrency.isPresent()) {
-            return new CurrencyResponseDto(
-                    newCurrency.get().getId(),
-                    newCurrency.get().getFullName(),
-                    newCurrency.get().getCode(),
-                    newCurrency.get().getSign());
-        } else {
-            throw new CurrencyAlreadyExistsException();
-        }
+        return new CurrencyResponseDto(
+                newCurrency.getId(),
+                newCurrency.getFullName(),
+                newCurrency.getCode(),
+                newCurrency.getSign());
     }
 
 

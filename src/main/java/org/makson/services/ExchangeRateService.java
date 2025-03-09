@@ -1,5 +1,6 @@
 package org.makson.services;
 
+import org.makson.entities.CurrencyEntity;
 import org.makson.exception.CurrencyNotFoundException;
 import org.makson.dao.CurrencyDao;
 import org.makson.dao.ExchangeRateDao;
@@ -22,20 +23,14 @@ public class ExchangeRateService {
     private ExchangeRateService() {
     }
 
-    public ExchangeRateResponseDto findByExchangeRate(String baseCurrencyCode, String targetCurrencyCode) throws CurrencyNotFoundException, ExchangeRateNotFoundException {
-        var optionalExchangeRate = exchangeRateDao.findByExchangeRate(baseCurrencyCode, targetCurrencyCode);
-
-        if (optionalExchangeRate.isPresent()) {
-            ExchangeRateEntity exchangeRate = optionalExchangeRate.get();
-            return new ExchangeRateResponseDto(
-                    exchangeRate.getId(),
-                    exchangeRate.getBaseCurrency(),
-                    exchangeRate.getTargetCurrency(),
-                    exchangeRate.getRate()
-            );
-        } else {
-            throw new ExchangeRateNotFoundException();
-        }
+    public ExchangeRateResponseDto findByExchangeRate(String baseCurrencyCode, String targetCurrencyCode) throws ExchangeRateNotFoundException {
+        ExchangeRateEntity exchangeRate = exchangeRateDao.findByExchangeRate(baseCurrencyCode, targetCurrencyCode);
+        return new ExchangeRateResponseDto(
+                exchangeRate.getId(),
+                exchangeRate.getBaseCurrency(),
+                exchangeRate.getTargetCurrency(),
+                exchangeRate.getRate()
+        );
     }
 
     public List<ExchangeRateResponseDto> findAll() {
@@ -49,46 +44,35 @@ public class ExchangeRateService {
                 .toList();
     }
 
-    public ExchangeRateResponseDto save(ExchangeRateRequestDto exchangeRateRequestDto) throws CurrencyNotFoundException {
-        var baseCurrency = currencyDao.findByCode(exchangeRateRequestDto.baseCurrencyCode());
-        var targetCurrency = currencyDao.findByCode(exchangeRateRequestDto.targetCurrencyCode());
-
-        if (baseCurrency.isPresent() && targetCurrency.isPresent()) {
-            var newExchangeRate = exchangeRateDao.save(new ExchangeRateEntity(
-                    DEFAULT_EXCHANGE_RATE_ID,
-                    baseCurrency.get(),
-                    targetCurrency.get(),
-                    exchangeRateRequestDto.rate()
-            ));
-
-            if (newExchangeRate.isPresent()) {
-                return new ExchangeRateResponseDto(
-                        newExchangeRate.get().getId(),
-                        newExchangeRate.get().getBaseCurrency(),
-                        newExchangeRate.get().getTargetCurrency(),
-                        newExchangeRate.get().getRate()
-                );
-            } else {
-                throw new ExchangeRateAlreadyExistsException();
-            }
-        } else {
-            throw new CurrencyNotFoundException();
-        }
+    public ExchangeRateResponseDto save(ExchangeRateRequestDto exchangeRateRequestDto) throws CurrencyNotFoundException, ExchangeRateAlreadyExistsException {
+        ExchangeRateEntity newExchangeRate = exchangeRateDao.save(new ExchangeRateEntity(
+                DEFAULT_EXCHANGE_RATE_ID,
+                currencyDao.findByCode(exchangeRateRequestDto.baseCurrencyCode()),
+                currencyDao.findByCode(exchangeRateRequestDto.targetCurrencyCode()),
+                exchangeRateRequestDto.rate()
+        ));
+        return new ExchangeRateResponseDto(
+                newExchangeRate.getId(),
+                newExchangeRate.getBaseCurrency(),
+                newExchangeRate.getTargetCurrency(),
+                newExchangeRate.getRate()
+        );
     }
 
-    public ExchangeRateResponseDto update(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) throws ExchangeRateNotFoundException {
-        var updatedExchangeRate = exchangeRateDao.update(baseCurrencyCode, targetCurrencyCode, rate);
+    public ExchangeRateResponseDto update(ExchangeRateRequestDto exchangeRateRequestDto) throws ExchangeRateNotFoundException {
+        ExchangeRateEntity updatedExchangeRate = exchangeRateDao.update(new ExchangeRateEntity(
+                DEFAULT_EXCHANGE_RATE_ID,
+                currencyDao.findByCode(exchangeRateRequestDto.baseCurrencyCode()),
+                currencyDao.findByCode(exchangeRateRequestDto.targetCurrencyCode()),
+                exchangeRateRequestDto.rate()
+        ));
 
-        if (updatedExchangeRate.isPresent()) {
-            return new ExchangeRateResponseDto(
-                    updatedExchangeRate.get().getId(),
-                    updatedExchangeRate.get().getBaseCurrency(),
-                    updatedExchangeRate.get().getTargetCurrency(),
-                    updatedExchangeRate.get().getRate()
-            );
-        } else {
-            throw new ExchangeRateNotFoundException();
-        }
+        return new ExchangeRateResponseDto(
+                updatedExchangeRate.getId(),
+                updatedExchangeRate.getBaseCurrency(),
+                updatedExchangeRate.getTargetCurrency(),
+                updatedExchangeRate.getRate()
+        );
     }
 
     public static ExchangeRateService getInstance() {

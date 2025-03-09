@@ -5,6 +5,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.makson.dto.ExchangeRateRequestDto;
 import org.makson.services.ExchangeRateService;
 import org.makson.utils.JsonMapper;
 
@@ -42,16 +43,21 @@ public class ExchangeRateServlet extends HttpServlet {
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("application/json");
         resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        String string = req.getReader().readLine().split("=")[1];
 
+        String string = req.getReader().readLine().split("=")[1];
         BigDecimal rate = new BigDecimal(string);
 
         String baseCurrencyCode = req.getPathInfo().substring(1, 4);
         String targetCurrencyCode = req.getPathInfo().substring(4);
 
+        ExchangeRateRequestDto exchangeRateRequestDto = new ExchangeRateRequestDto(
+                baseCurrencyCode,
+                targetCurrencyCode,
+                rate
+        );
 
         try (var printWriter = resp.getWriter()) {
-            printWriter.write(jsonMapper.dtoToJson(exchangeRateService.update(baseCurrencyCode, targetCurrencyCode, rate)));
+            printWriter.write(jsonMapper.dtoToJson(exchangeRateService.update(exchangeRateRequestDto)));
         }
     }
 }
