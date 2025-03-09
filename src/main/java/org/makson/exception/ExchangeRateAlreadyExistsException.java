@@ -1,6 +1,6 @@
 package org.makson.exception;
 
-public class ExchangeRateAlreadyExistsException extends RuntimeException {
+public class ExchangeRateAlreadyExistsException extends Exception {
     public ExchangeRateAlreadyExistsException() {
     }
 }

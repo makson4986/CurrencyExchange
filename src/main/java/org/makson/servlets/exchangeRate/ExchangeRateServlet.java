@@ -1,4 +1,4 @@
-package org.makson.servlets;
+package org.makson.servlets.exchangeRate;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.makson.dto.ExchangeRateRequestDto;
+import org.makson.exception.ExchangeRateNotFoundException;
 import org.makson.services.ExchangeRateService;
 import org.makson.utils.JsonMapper;
 
@@ -37,6 +38,8 @@ public class ExchangeRateServlet extends HttpServlet {
 
         try (var printWriter = resp.getWriter()) {
             printWriter.write(jsonMapper.dtoToJson(exchangeRateService.findByExchangeRate(baseCurrencyCode, targetCurrencyCode)));
+        } catch (ExchangeRateNotFoundException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -56,8 +59,8 @@ public class ExchangeRateServlet extends HttpServlet {
                 rate
         );
 
-        try (var printWriter = resp.getWriter()) {
-            printWriter.write(jsonMapper.dtoToJson(exchangeRateService.update(exchangeRateRequestDto)));
-        }
+//        try (var printWriter = resp.getWriter()) {
+//            printWriter.write(jsonMapper.dtoToJson(exchangeRateService.update(exchangeRateRequestDto)));
+//        }
     }
 }

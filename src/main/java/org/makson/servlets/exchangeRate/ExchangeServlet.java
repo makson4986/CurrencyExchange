@@ -1,4 +1,4 @@
-package org.makson.servlets;
+package org.makson.servlets.exchangeRate;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -33,8 +33,8 @@ public class ExchangeServlet extends HttpServlet {
                 new BigDecimal(amount)
         );
 
-        try (var printWriter = resp.getWriter()) {
-            printWriter.write(jsonMapper.dtoToJson(exchangeRateService.convertCurrency(convertCurrencyRequestDto)));
-        }
+//        try (var printWriter = resp.getWriter()) {
+//            printWriter.write(jsonMapper.dtoToJson(exchangeRateService.convertCurrency(convertCurrencyRequestDto)));
+//        }
     }
 }

@@ -10,7 +10,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class CurrencyDao implements Dao<CurrencyEntity> {
     private static final CurrencyDao INSTANCE = new CurrencyDao();
@@ -27,7 +26,7 @@ public class CurrencyDao implements Dao<CurrencyEntity> {
     private CurrencyDao() {
     }
 
-    public CurrencyEntity findByCode(String code) throws CurrencyNotFoundException {
+    public CurrencyEntity findByCode(String code) throws CurrencyNotFoundException, SQLException {
         try (var connection = ConnectionManager.open();
              var prepareStatement = connection.prepareStatement(FIND_BY_CODE)) {
             prepareStatement.setString(1, code);
@@ -38,13 +37,11 @@ public class CurrencyDao implements Dao<CurrencyEntity> {
             }
 
             throw new CurrencyNotFoundException();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 
     @Override
-    public List<CurrencyEntity> findAll() {
+    public List<CurrencyEntity> findAll() throws SQLException {
         try (var connection = ConnectionManager.open();
              var prepareStatement = connection.prepareStatement(FIND_ALL)) {
             ResultSet resultSet = prepareStatement.executeQuery();
@@ -55,13 +52,11 @@ public class CurrencyDao implements Dao<CurrencyEntity> {
             }
 
             return currencies;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 
     @Override
-    public CurrencyEntity save(CurrencyEntity entity) throws CurrencyAlreadyExistsException {
+    public CurrencyEntity save(CurrencyEntity entity) throws CurrencyAlreadyExistsException, SQLException {
         try (var connection = ConnectionManager.open();
              var prepareStatement = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS)) {
             prepareStatement.setString(1, entity.getCode());
@@ -71,16 +66,21 @@ public class CurrencyDao implements Dao<CurrencyEntity> {
             prepareStatement.executeUpdate();
 
             try (var generatedKeys = prepareStatement.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    entity.setId(generatedKeys.getLong(1));
-                    return entity;
-                }
+                generatedKeys.next();
+                entity.setId(generatedKeys.getLong(1));
+                return entity;
             }
-
-            throw new CurrencyAlreadyExistsException();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            if (e.getErrorCode() == 19) {
+                throw new CurrencyAlreadyExistsException();
+            }
+            throw new SQLException(e);
         }
+    }
+
+    @Override
+    public CurrencyEntity update(CurrencyEntity entity) {
+        return null;
     }
 
     private CurrencyEntity buildCurrency(ResultSet resultSet) throws SQLException {

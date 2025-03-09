@@ -14,6 +14,7 @@ import org.makson.exception.ExchangeRateNotFoundException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,7 +47,7 @@ public class ExchangeRateService {
                 .toList();
     }
 
-    public ExchangeRateResponseDto save(ExchangeRateRequestDto exchangeRateRequestDto) throws CurrencyNotFoundException, ExchangeRateAlreadyExistsException {
+    public ExchangeRateResponseDto save(ExchangeRateRequestDto exchangeRateRequestDto) throws CurrencyNotFoundException, ExchangeRateAlreadyExistsException, SQLException {
         ExchangeRateEntity newExchangeRate = exchangeRateDao.save(new ExchangeRateEntity(
                 currencyDao.findByCode(exchangeRateRequestDto.baseCurrencyCode()),
                 currencyDao.findByCode(exchangeRateRequestDto.targetCurrencyCode()),
@@ -60,12 +61,17 @@ public class ExchangeRateService {
         );
     }
 
-    public ExchangeRateResponseDto update(ExchangeRateRequestDto exchangeRateRequestDto) throws ExchangeRateNotFoundException {
-        ExchangeRateEntity updatedExchangeRate = exchangeRateDao.update(new ExchangeRateEntity(
-                currencyDao.findByCode(exchangeRateRequestDto.baseCurrencyCode()),
-                currencyDao.findByCode(exchangeRateRequestDto.targetCurrencyCode()),
-                exchangeRateRequestDto.rate()
-        ));
+    public ExchangeRateResponseDto update(ExchangeRateRequestDto exchangeRateRequestDto) throws ExchangeRateNotFoundException, SQLException {
+        ExchangeRateEntity updatedExchangeRate;
+        try {
+             updatedExchangeRate = exchangeRateDao.update(new ExchangeRateEntity(
+                    currencyDao.findByCode(exchangeRateRequestDto.baseCurrencyCode()),
+                    currencyDao.findByCode(exchangeRateRequestDto.targetCurrencyCode()),
+                    exchangeRateRequestDto.rate()
+            ));
+        } catch (CurrencyNotFoundException e) {
+            throw new RuntimeException(e);
+        }
 
         return new ExchangeRateResponseDto(
                 updatedExchangeRate.getId(),

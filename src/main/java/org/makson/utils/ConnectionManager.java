@@ -23,11 +23,7 @@ public final class ConnectionManager {
         }
     }
 
-    public static Connection open() {
-        try {
-            return DriverManager.getConnection(PropertiesUtils.get(URL_KEY));
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+    public static Connection open() throws SQLException {
+        return DriverManager.getConnection(PropertiesUtils.get(URL_KEY));
     }
 }
