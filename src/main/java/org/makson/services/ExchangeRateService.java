@@ -9,7 +9,7 @@ import org.makson.dto.ExchangeRateResponseDto;
 import org.makson.entities.CurrencyEntity;
 import org.makson.entities.ExchangeRateEntity;
 import org.makson.exception.CurrencyNotFoundException;
-import org.makson.exception.ExchangeRateAlreadyExistsException;
+import org.makson.exception.ExchangeRateAlreadyExistException;
 import org.makson.exception.ExchangeRateNotFoundException;
 
 import java.math.BigDecimal;
@@ -46,7 +46,7 @@ public class ExchangeRateService {
                 .toList();
     }
 
-    public ExchangeRateResponseDto save(ExchangeRateRequestDto exchangeRateRequestDto) throws CurrencyNotFoundException, ExchangeRateAlreadyExistsException, SQLException {
+    public ExchangeRateResponseDto save(ExchangeRateRequestDto exchangeRateRequestDto) throws CurrencyNotFoundException, ExchangeRateAlreadyExistException, SQLException {
         ExchangeRateEntity newExchangeRate = exchangeRateDao.save(new ExchangeRateEntity(
                 currencyDao.findByCode(exchangeRateRequestDto.baseCurrencyCode()),
                 currencyDao.findByCode(exchangeRateRequestDto.targetCurrencyCode()),

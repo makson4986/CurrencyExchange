@@ -2,7 +2,7 @@ package org.makson.dao;
 
 import org.makson.entities.ExchangeRateEntity;
 import org.makson.exception.CurrencyNotFoundException;
-import org.makson.exception.ExchangeRateAlreadyExistsException;
+import org.makson.exception.ExchangeRateAlreadyExistException;
 import org.makson.exception.ExchangeRateNotFoundException;
 import org.makson.utils.ConnectionManager;
 
@@ -73,7 +73,7 @@ public class ExchangeRateDao implements Dao<ExchangeRateEntity> {
     }
 
     @Override
-    public ExchangeRateEntity save(ExchangeRateEntity entity) throws ExchangeRateAlreadyExistsException, SQLException {
+    public ExchangeRateEntity save(ExchangeRateEntity entity) throws ExchangeRateAlreadyExistException, SQLException {
         try (var connection = ConnectionManager.open();
              var prepareStatement = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS)) {
             prepareStatement.setLong(1, entity.getBaseCurrency().getId());
@@ -89,7 +89,7 @@ public class ExchangeRateDao implements Dao<ExchangeRateEntity> {
             }
         } catch (SQLException e) {
             if (e.getErrorCode() == 19) {
-                throw new ExchangeRateAlreadyExistsException();
+                throw new ExchangeRateAlreadyExistException();
             }
             throw new SQLException(e);
         }

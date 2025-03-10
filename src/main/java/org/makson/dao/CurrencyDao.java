@@ -1,7 +1,7 @@
 package org.makson.dao;
 
 import org.makson.entities.CurrencyEntity;
-import org.makson.exception.CurrencyAlreadyExistsException;
+import org.makson.exception.CurrencyAlreadyExistException;
 import org.makson.exception.CurrencyNotFoundException;
 import org.makson.utils.ConnectionManager;
 
@@ -56,7 +56,7 @@ public class CurrencyDao implements Dao<CurrencyEntity> {
     }
 
     @Override
-    public CurrencyEntity save(CurrencyEntity entity) throws CurrencyAlreadyExistsException, SQLException {
+    public CurrencyEntity save(CurrencyEntity entity) throws CurrencyAlreadyExistException, SQLException {
         try (var connection = ConnectionManager.open();
              var prepareStatement = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS)) {
             prepareStatement.setString(1, entity.getCode());
@@ -72,7 +72,7 @@ public class CurrencyDao implements Dao<CurrencyEntity> {
             }
         } catch (SQLException e) {
             if (e.getErrorCode() == 19) {
-                throw new CurrencyAlreadyExistsException();
+                throw new CurrencyAlreadyExistException();
             }
             throw new SQLException(e);
         }

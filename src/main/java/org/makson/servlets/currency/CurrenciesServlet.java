@@ -7,12 +7,13 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.makson.dto.CurrencyRequestDto;
-import org.makson.dto.ErrorResponseDto;
-import org.makson.exception.CurrencyAlreadyExistsException;
+import org.makson.exception.CurrencyAlreadyExistException;
+import org.makson.exception.InvalidCurrencyCodeException;
+import org.makson.exception.ParameterNotFoundException;
 import org.makson.services.CurrencyService;
+import org.makson.utils.CurrencyValidator;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 
 @WebServlet("/currencies")
@@ -22,14 +23,10 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
-
         try {
             objectMapper.writeValue(resp.getWriter(), currencyService.findAll());
         } catch (SQLException e) {
-            resp.setStatus(500);
-            objectMapper.writeValue(resp.getWriter(), new ErrorResponseDto("Something went wrong on the server. Please try again later"));
+            throw new ServletException(e);
         }
     }
 
@@ -40,17 +37,15 @@ public class CurrenciesServlet extends HttpServlet {
         String sign = req.getParameter("sign");
 
         if (name == null || name.isBlank()) {
-            resp.setStatus(400);
-            objectMapper.writeValue(resp.getWriter(), new ErrorResponseDto("The parameter name is missing"));
-            return;
+            throw new ServletException(new ParameterNotFoundException("The parameter name is missing"));
         } else if (code == null || code.isBlank()) {
-            resp.setStatus(400);
-            objectMapper.writeValue(resp.getWriter(), new ErrorResponseDto("The parameter code is missing"));
-            return;
+            throw new ServletException(new ParameterNotFoundException("The parameter code is missing"));
         } else if (sign == null || sign.isBlank()) {
-            resp.setStatus(400);
-            objectMapper.writeValue(resp.getWriter(), new ErrorResponseDto("The parameter sign is missing"));
-            return;
+            throw new ServletException(new ParameterNotFoundException("The parameter sign is missing"));
+        }
+
+        if (!CurrencyValidator.isValidCurrencyCode(code)) {
+            throw new ServletException(new InvalidCurrencyCodeException());
         }
 
         CurrencyRequestDto newCurrency = new CurrencyRequestDto(name, code, sign);
@@ -58,12 +53,8 @@ public class CurrenciesServlet extends HttpServlet {
         try {
             resp.setStatus(201);
             objectMapper.writeValue(resp.getWriter(), currencyService.save(newCurrency));
-        } catch (CurrencyAlreadyExistsException e) {
-            resp.setStatus(409);
-            objectMapper.writeValue(resp.getWriter(), new ErrorResponseDto("A currency with this code already exists."));
-        } catch (SQLException e) {
-            resp.setStatus(500);
-            objectMapper.writeValue(resp.getWriter(), new ErrorResponseDto("Something went wrong on the server. Please try again later."));
+        } catch (CurrencyAlreadyExistException | SQLException e) {
+            throw new ServletException(e);
         }
     }
 }
