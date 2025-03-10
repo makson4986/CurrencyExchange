@@ -13,7 +13,6 @@ import org.makson.services.ExchangeRateService;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 
 @WebServlet("/exchangeRate/*")
@@ -32,9 +31,6 @@ public class ExchangeRateServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
-
         if (req.getPathInfo().length() != 7) {
             resp.setStatus(400);
             objectMapper.writeValue(resp.getWriter(), new ErrorResponseDto("Currency codes of the pair are missing in the address"));
@@ -58,9 +54,6 @@ public class ExchangeRateServlet extends HttpServlet {
     }
 
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
-
         String parameter = req.getReader().readLine();
         if (parameter == null || !parameter.contains("rate")) {
             resp.setStatus(400);

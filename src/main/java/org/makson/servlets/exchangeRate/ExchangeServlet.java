@@ -13,7 +13,6 @@ import org.makson.services.ExchangeRateService;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 
 @WebServlet("/exchange")
@@ -23,20 +22,17 @@ public class ExchangeServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
-
         String fromCurrency = req.getParameter("from");
         String toCurrency = req.getParameter("to");
         String amount = req.getParameter("amount");
 
         if (fromCurrency == null || fromCurrency.isBlank()) {
             resp.setStatus(400);
-            objectMapper.writeValue(resp.getWriter(), new ErrorResponseDto("The parameter from is missing"));
+            objectMapper.writeValue(resp.getWriter(), new ErrorResponseDto("The parameter «from» is missing"));
             return;
         } else if (toCurrency == null || toCurrency.isBlank()) {
             resp.setStatus(400);
-            objectMapper.writeValue(resp.getWriter(), new ErrorResponseDto("The parameter to is missing"));
+            objectMapper.writeValue(resp.getWriter(), new ErrorResponseDto("The parameter «to» is missing"));
             return;
         } else if (amount == null || amount.isBlank()) {
             resp.setStatus(400);

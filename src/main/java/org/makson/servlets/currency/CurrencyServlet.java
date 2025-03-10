@@ -11,7 +11,6 @@ import org.makson.exception.CurrencyNotFoundException;
 import org.makson.services.CurrencyService;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 
 @WebServlet("/currency/*")
@@ -21,13 +20,6 @@ public class CurrencyServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
-
-        //TODO resp.setContentType("application/json");
-        //        resp.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        // както вынести
-
         String currencyCode = req.getPathInfo().substring(1);
 
         if (currencyCode.isBlank()) {
