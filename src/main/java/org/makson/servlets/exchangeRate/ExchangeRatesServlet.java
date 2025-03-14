@@ -7,8 +7,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.makson.dto.ExchangeRateRequestDto;
-import org.makson.exception.CurrencyNotFoundException;
-import org.makson.exception.ExchangeRateAlreadyExistException;
+import org.makson.exception.DataAlreadyExistException;
+import org.makson.exception.DataNotFoundException;
 import org.makson.exception.InvalidCurrencyCodeException;
 import org.makson.exception.ParameterNotFoundException;
 import org.makson.services.ExchangeRateService;
@@ -56,7 +56,7 @@ public class ExchangeRatesServlet extends HttpServlet {
         try {
             resp.setStatus(201);
             objectMapper.writeValue(resp.getWriter(), exchangeRateService.save(newExchangeRate));
-        } catch (CurrencyNotFoundException | ExchangeRateAlreadyExistException | SQLException e) {
+        } catch (DataNotFoundException | DataAlreadyExistException | SQLException e) {
             throw new ServletException(e);
         }
 

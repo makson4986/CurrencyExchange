@@ -1,6 +1,6 @@
 package org.makson.exception;
 
-public class CurrencyCodeMissingException extends RuntimeException {
+public class CurrencyCodeMissingException extends Exception {
     public CurrencyCodeMissingException() {
         super();
     }

@@ -8,9 +8,7 @@ import org.makson.dto.ExchangeRateRequestDto;
 import org.makson.dto.ExchangeRateResponseDto;
 import org.makson.entities.CurrencyEntity;
 import org.makson.entities.ExchangeRateEntity;
-import org.makson.exception.CurrencyNotFoundException;
-import org.makson.exception.ExchangeRateAlreadyExistException;
-import org.makson.exception.ExchangeRateNotFoundException;
+import org.makson.exception.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -25,7 +23,7 @@ public class ExchangeRateService {
     private ExchangeRateService() {
     }
 
-    public ExchangeRateResponseDto findByExchangeRate(String baseCurrencyCode, String targetCurrencyCode) throws ExchangeRateNotFoundException, SQLException {
+    public ExchangeRateResponseDto findByExchangeRate(String baseCurrencyCode, String targetCurrencyCode) throws DataNotFoundException, SQLException {
         ExchangeRateEntity exchangeRate = exchangeRateDao.findByExchangeRate(baseCurrencyCode, targetCurrencyCode);
         return new ExchangeRateResponseDto(
                 exchangeRate.getId(),
@@ -46,7 +44,7 @@ public class ExchangeRateService {
                 .toList();
     }
 
-    public ExchangeRateResponseDto save(ExchangeRateRequestDto exchangeRateRequestDto) throws CurrencyNotFoundException, ExchangeRateAlreadyExistException, SQLException {
+    public ExchangeRateResponseDto save(ExchangeRateRequestDto exchangeRateRequestDto) throws DataNotFoundException, DataAlreadyExistException, SQLException {
         ExchangeRateEntity newExchangeRate = exchangeRateDao.save(new ExchangeRateEntity(
                 currencyDao.findByCode(exchangeRateRequestDto.baseCurrencyCode()),
                 currencyDao.findByCode(exchangeRateRequestDto.targetCurrencyCode()),
@@ -60,17 +58,13 @@ public class ExchangeRateService {
         );
     }
 
-    public ExchangeRateResponseDto update(ExchangeRateRequestDto exchangeRateRequestDto) throws ExchangeRateNotFoundException, SQLException {
+    public ExchangeRateResponseDto update(ExchangeRateRequestDto exchangeRateRequestDto) throws DataNotFoundException, SQLException {
         ExchangeRateEntity updatedExchangeRate;
-        try {
-             updatedExchangeRate = exchangeRateDao.update(new ExchangeRateEntity(
-                    currencyDao.findByCode(exchangeRateRequestDto.baseCurrencyCode()),
-                    currencyDao.findByCode(exchangeRateRequestDto.targetCurrencyCode()),
-                    exchangeRateRequestDto.rate()
-            ));
-        } catch (CurrencyNotFoundException e) {
-            throw new ExchangeRateNotFoundException();
-        }
+        updatedExchangeRate = exchangeRateDao.update(new ExchangeRateEntity(
+                currencyDao.findByCode(exchangeRateRequestDto.baseCurrencyCode()),
+                currencyDao.findByCode(exchangeRateRequestDto.targetCurrencyCode()),
+                exchangeRateRequestDto.rate()
+        ));
 
         return new ExchangeRateResponseDto(
                 updatedExchangeRate.getId(),
@@ -80,7 +74,7 @@ public class ExchangeRateService {
         );
     }
 
-    public ConvertCurrencyResponseDto convertCurrency(ConvertCurrencyRequestDto convertCurrencyRequestDto) throws ExchangeRateNotFoundException, SQLException {
+    public ConvertCurrencyResponseDto convertCurrency(ConvertCurrencyRequestDto convertCurrencyRequestDto) throws DataNotFoundException, SQLException {
         CurrencyEntity baseCurrency;
         CurrencyEntity targetCurrency;
         BigDecimal rate;
@@ -90,15 +84,17 @@ public class ExchangeRateService {
             baseCurrency = exchangeRate.baseCurrency();
             targetCurrency = exchangeRate.targetCurrency();
             rate = exchangeRate.rate();
-        } catch (ExchangeRateNotFoundException _) {
+        } catch (DataNotFoundException _) {
             try {
                 var exchangeRate = findByExchangeRate(convertCurrencyRequestDto.targetCurrencyCode(), convertCurrencyRequestDto.baseCurrencyCode());
+
                 baseCurrency = exchangeRate.baseCurrency();
                 targetCurrency = exchangeRate.targetCurrency();
                 rate = new BigDecimal(1).divide(exchangeRate.rate(), 6, RoundingMode.HALF_UP);
-            } catch (ExchangeRateNotFoundException _) {
+            } catch (DataNotFoundException _) {
                 var exchangeRate1 = findByExchangeRate("USD", convertCurrencyRequestDto.baseCurrencyCode());
                 var exchangeRate2 = findByExchangeRate("USD", convertCurrencyRequestDto.targetCurrencyCode());
+
                 baseCurrency = exchangeRate1.targetCurrency();
                 targetCurrency = exchangeRate2.targetCurrency();
                 rate = exchangeRate2.rate().divide(exchangeRate1.rate(), 6, RoundingMode.HALF_UP);

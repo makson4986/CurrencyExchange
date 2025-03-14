@@ -1,8 +1,12 @@
-package org.makson.filter;
+package org.makson.filters;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.*;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.HttpFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import org.makson.dto.ErrorResponseDto;
 import org.makson.exception.*;
@@ -10,7 +14,7 @@ import org.makson.exception.*;
 import java.io.IOException;
 
 @WebFilter("/*")
-public class ErrorFilter implements Filter {
+public class ErrorFilter extends HttpFilter {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -26,18 +30,16 @@ public class ErrorFilter implements Filter {
         Throwable exception = e.getCause();
 
         switch (exception) {
-            case CurrencyAlreadyExistException currencyAlreadyExistException ->
-                    handleException(servletResponse, 409, "A currency with this code already exists");
-            case CurrencyNotFoundException currencyNotFoundException ->
-                    handleException(servletResponse, 404, "Currency not found");
-            case ExchangeRateAlreadyExistException exchangeRateAlreadyExistException ->
-                    handleException(servletResponse, 409, "A currency pair with this code already exists");
-            case ExchangeRateNotFoundException exchangeRateNotFoundException ->
-                    handleException(servletResponse, 404, "Exchange rate for the pair not found");
-            case InvalidCurrencyCodeException invalidCurrencyCodeException ->
-                    handleException(servletResponse, 400, "This currency does not exist");
+            case DataNotFoundException dataNotFoundException ->
+                    handleException(servletResponse, 404, exception.getMessage());
+            case DataAlreadyExistException dataAlreadyExistException ->
+                    handleException(servletResponse, 409, exception.getMessage());
             case ParameterNotFoundException parameterNotFoundException ->
                     handleException(servletResponse, 400, exception.getMessage());
+            case NumberFormatException numberFormatException ->
+                    handleException(servletResponse, 400, "Incorrect value format");
+            case InvalidCurrencyCodeException invalidCurrencyCodeException ->
+                    handleException(servletResponse, 400, "This currency does not exist");
             case CurrencyCodeMissingException currencyCodeMissingException ->
                     handleException(servletResponse, 400, "Currency code(s) missing from address");
             case null, default ->

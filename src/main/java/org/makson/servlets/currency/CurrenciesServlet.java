@@ -7,7 +7,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.makson.dto.CurrencyRequestDto;
-import org.makson.exception.CurrencyAlreadyExistException;
+import org.makson.exception.DataAlreadyExistException;
 import org.makson.exception.InvalidCurrencyCodeException;
 import org.makson.exception.ParameterNotFoundException;
 import org.makson.services.CurrencyService;
@@ -53,7 +53,7 @@ public class CurrenciesServlet extends HttpServlet {
         try {
             resp.setStatus(201);
             objectMapper.writeValue(resp.getWriter(), currencyService.save(newCurrency));
-        } catch (CurrencyAlreadyExistException | SQLException e) {
+        } catch (DataAlreadyExistException | SQLException e) {
             throw new ServletException(e);
         }
     }

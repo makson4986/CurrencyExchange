@@ -7,7 +7,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.makson.dto.ConvertCurrencyRequestDto;
-import org.makson.exception.ExchangeRateNotFoundException;
+import org.makson.exception.DataNotFoundException;
 import org.makson.exception.InvalidCurrencyCodeException;
 import org.makson.exception.ParameterNotFoundException;
 import org.makson.services.ExchangeRateService;
@@ -40,11 +40,16 @@ public class ExchangeServlet extends HttpServlet {
             throw new ServletException(new InvalidCurrencyCodeException());
         }
 
-        ConvertCurrencyRequestDto convertCurrencyRequestDto = new ConvertCurrencyRequestDto(fromCurrency, toCurrency, new BigDecimal(amount));
+        ConvertCurrencyRequestDto convertCurrencyRequestDto;
+        try {
+            convertCurrencyRequestDto = new ConvertCurrencyRequestDto(fromCurrency, toCurrency, new BigDecimal(amount));
+        } catch (NumberFormatException e) {
+            throw new ServletException(e);
+        }
 
         try {
             objectMapper.writeValue(resp.getWriter(), exchangeRateService.convertCurrency(convertCurrencyRequestDto));
-        } catch (ExchangeRateNotFoundException | SQLException e) {
+        } catch (DataNotFoundException | SQLException e) {
             throw new ServletException(e);
         }
     }

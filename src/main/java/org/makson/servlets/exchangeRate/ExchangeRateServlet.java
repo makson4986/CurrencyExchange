@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.makson.dto.ExchangeRateRequestDto;
 import org.makson.exception.CurrencyCodeMissingException;
-import org.makson.exception.ExchangeRateNotFoundException;
+import org.makson.exception.DataNotFoundException;
 import org.makson.exception.InvalidCurrencyCodeException;
 import org.makson.exception.ParameterNotFoundException;
 import org.makson.services.ExchangeRateService;
@@ -47,7 +47,7 @@ public class ExchangeRateServlet extends HttpServlet {
 
         try {
             objectMapper.writeValue(resp.getWriter(), exchangeRateService.findByExchangeRate(baseCurrencyCode, targetCurrencyCode));
-        } catch (ExchangeRateNotFoundException | SQLException e) {
+        } catch (DataNotFoundException | SQLException e) {
             throw new ServletException(e);
         }
 
@@ -63,19 +63,31 @@ public class ExchangeRateServlet extends HttpServlet {
 
         try {
             objectMapper.writeValue(resp.getWriter(), exchangeRateService.update(exchangeRateRequestDto));
-        } catch (ExchangeRateNotFoundException | SQLException e) {
+        } catch (DataNotFoundException | SQLException e) {
             throw new ServletException(e);
         }
     }
 
     private ExchangeRateRequestDto getExchangeRateRequestDto(HttpServletRequest req, String parameter) throws ServletException {
-        String baseCurrencyCode = req.getPathInfo().substring(1, 4);
-        String targetCurrencyCode = req.getPathInfo().substring(4);
+        String baseCurrencyCode;
+        String targetCurrencyCode;
+
+        try {
+            baseCurrencyCode = req.getPathInfo().substring(1, 4);
+            targetCurrencyCode = req.getPathInfo().substring(4);
+        } catch (IndexOutOfBoundsException e) {
+            throw new ServletException(new CurrencyCodeMissingException());
+        }
+
         if (!CurrencyValidator.isValidCurrencyCode(baseCurrencyCode) || !CurrencyValidator.isValidCurrencyCode(targetCurrencyCode)) {
             throw new ServletException(new InvalidCurrencyCodeException());
         }
 
-        BigDecimal rate = new BigDecimal(parameter.replace("rate=", ""));
-        return new ExchangeRateRequestDto(baseCurrencyCode, targetCurrencyCode, rate);
+        try {
+            return new ExchangeRateRequestDto(baseCurrencyCode, targetCurrencyCode, new BigDecimal(parameter.replace("rate=", "")));
+        } catch (NumberFormatException e) {
+            throw new ServletException(e);
+        }
+
     }
 }

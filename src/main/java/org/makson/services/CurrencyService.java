@@ -4,8 +4,8 @@ import org.makson.dao.CurrencyDao;
 import org.makson.dto.CurrencyRequestDto;
 import org.makson.dto.CurrencyResponseDto;
 import org.makson.entities.CurrencyEntity;
-import org.makson.exception.CurrencyAlreadyExistException;
-import org.makson.exception.CurrencyNotFoundException;
+import org.makson.exception.DataAlreadyExistException;
+import org.makson.exception.DataNotFoundException;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -17,7 +17,7 @@ public class CurrencyService {
     private CurrencyService() {
     }
 
-    public CurrencyResponseDto findByCode(String code) throws CurrencyNotFoundException, SQLException {
+    public CurrencyResponseDto findByCode(String code) throws DataNotFoundException, SQLException {
         CurrencyEntity currency = currencyDao.findByCode(code);
         return new CurrencyResponseDto(
                 currency.getId(),
@@ -38,7 +38,7 @@ public class CurrencyService {
                 .toList();
     }
 
-    public CurrencyResponseDto save(CurrencyRequestDto currencyDto) throws CurrencyAlreadyExistException, SQLException {
+    public CurrencyResponseDto save(CurrencyRequestDto currencyDto) throws DataAlreadyExistException, SQLException {
         CurrencyEntity newCurrency = currencyDao.save(new CurrencyEntity(
                 currencyDto.code(),
                 currencyDto.name(),

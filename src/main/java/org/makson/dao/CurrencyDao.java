@@ -1,8 +1,8 @@
 package org.makson.dao;
 
 import org.makson.entities.CurrencyEntity;
-import org.makson.exception.CurrencyAlreadyExistException;
-import org.makson.exception.CurrencyNotFoundException;
+import org.makson.exception.DataAlreadyExistException;
+import org.makson.exception.DataNotFoundException;
 import org.makson.utils.ConnectionManager;
 
 import java.sql.ResultSet;
@@ -26,7 +26,7 @@ public class CurrencyDao implements Dao<CurrencyEntity> {
     private CurrencyDao() {
     }
 
-    public CurrencyEntity findByCode(String code) throws CurrencyNotFoundException, SQLException {
+    public CurrencyEntity findByCode(String code) throws DataNotFoundException, SQLException {
         try (var connection = ConnectionManager.open();
              var prepareStatement = connection.prepareStatement(FIND_BY_CODE)) {
             prepareStatement.setString(1, code);
@@ -36,7 +36,7 @@ public class CurrencyDao implements Dao<CurrencyEntity> {
                 return buildCurrency(resultSet);
             }
 
-            throw new CurrencyNotFoundException();
+            throw new DataNotFoundException("Currency not found");
         }
     }
 
@@ -56,7 +56,7 @@ public class CurrencyDao implements Dao<CurrencyEntity> {
     }
 
     @Override
-    public CurrencyEntity save(CurrencyEntity entity) throws CurrencyAlreadyExistException, SQLException {
+    public CurrencyEntity save(CurrencyEntity entity) throws DataAlreadyExistException, SQLException {
         try (var connection = ConnectionManager.open();
              var prepareStatement = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS)) {
             prepareStatement.setString(1, entity.getCode());
@@ -72,7 +72,7 @@ public class CurrencyDao implements Dao<CurrencyEntity> {
             }
         } catch (SQLException e) {
             if (e.getErrorCode() == 19) {
-                throw new CurrencyAlreadyExistException();
+                throw new DataAlreadyExistException("A currency with this code already exists");
             }
             throw new SQLException(e);
         }

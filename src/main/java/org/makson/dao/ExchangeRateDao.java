@@ -1,9 +1,8 @@
 package org.makson.dao;
 
 import org.makson.entities.ExchangeRateEntity;
-import org.makson.exception.CurrencyNotFoundException;
-import org.makson.exception.ExchangeRateAlreadyExistException;
-import org.makson.exception.ExchangeRateNotFoundException;
+import org.makson.exception.DataAlreadyExistException;
+import org.makson.exception.DataNotFoundException;
 import org.makson.utils.ConnectionManager;
 
 import java.sql.ResultSet;
@@ -41,7 +40,7 @@ public class ExchangeRateDao implements Dao<ExchangeRateEntity> {
 
     }
 
-    public ExchangeRateEntity findByExchangeRate(String baseCurrencyCode, String targetCurrencyCode) throws ExchangeRateNotFoundException, SQLException {
+    public ExchangeRateEntity findByExchangeRate(String baseCurrencyCode, String targetCurrencyCode) throws DataNotFoundException, SQLException {
         try (var connection = ConnectionManager.open();
              var prepareStatement = connection.prepareStatement(FIND_BY_EXCHANGE_RATE)) {
             prepareStatement.setString(1, baseCurrencyCode);
@@ -53,7 +52,7 @@ public class ExchangeRateDao implements Dao<ExchangeRateEntity> {
                 return buildExchangeRate(resultSet);
             }
 
-            throw new ExchangeRateNotFoundException();
+            throw new DataNotFoundException("Exchange rate for the pair not found");
         }
     }
 
@@ -73,7 +72,7 @@ public class ExchangeRateDao implements Dao<ExchangeRateEntity> {
     }
 
     @Override
-    public ExchangeRateEntity save(ExchangeRateEntity entity) throws ExchangeRateAlreadyExistException, SQLException {
+    public ExchangeRateEntity save(ExchangeRateEntity entity) throws DataAlreadyExistException, SQLException {
         try (var connection = ConnectionManager.open();
              var prepareStatement = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS)) {
             prepareStatement.setLong(1, entity.getBaseCurrency().getId());
@@ -89,14 +88,14 @@ public class ExchangeRateDao implements Dao<ExchangeRateEntity> {
             }
         } catch (SQLException e) {
             if (e.getErrorCode() == 19) {
-                throw new ExchangeRateAlreadyExistException();
+                throw new DataAlreadyExistException("A currency pair with this code already exists");
             }
             throw new SQLException(e);
         }
     }
 
     @Override
-    public ExchangeRateEntity update(ExchangeRateEntity entity) throws ExchangeRateNotFoundException, SQLException {
+    public ExchangeRateEntity update(ExchangeRateEntity entity) throws DataNotFoundException, SQLException {
         try (var connection = ConnectionManager.open();
              var prepareStatement = connection.prepareStatement(UPDATE)) {
             prepareStatement.setBigDecimal(1, entity.getRate());
@@ -107,7 +106,7 @@ public class ExchangeRateDao implements Dao<ExchangeRateEntity> {
                 return findByExchangeRate(entity.getBaseCurrency().getCode(), entity.getTargetCurrency().getCode());
             }
 
-            throw new ExchangeRateNotFoundException();
+            throw new DataNotFoundException("Exchange rate for the pair not found");
         }
     }
 
@@ -119,7 +118,7 @@ public class ExchangeRateDao implements Dao<ExchangeRateEntity> {
                     CurrencyDao.getInstance().findByCode(resultSet.getString("target_currency_code")),
                     resultSet.getBigDecimal("rate")
             );
-        } catch (CurrencyNotFoundException e) {
+        } catch (DataNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
