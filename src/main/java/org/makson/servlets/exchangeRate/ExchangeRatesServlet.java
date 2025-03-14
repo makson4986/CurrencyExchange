@@ -51,7 +51,12 @@ public class ExchangeRatesServlet extends HttpServlet {
             throw new ServletException(new InvalidCurrencyCodeException());
         }
 
-        ExchangeRateRequestDto newExchangeRate = new ExchangeRateRequestDto(baseCurrencyCode, targetCurrencyCode, new BigDecimal(rate));
+        ExchangeRateRequestDto newExchangeRate;
+        try {
+            newExchangeRate = new ExchangeRateRequestDto(baseCurrencyCode, targetCurrencyCode, new BigDecimal(rate));
+        } catch (NumberFormatException e) {
+            throw new ServletException(e);
+        }
 
         try {
             resp.setStatus(201);
