@@ -9,9 +9,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.makson.dto.ConvertCurrencyRequestDto;
 import org.makson.exception.DataNotFoundException;
 import org.makson.exception.InvalidCurrencyCodeException;
-import org.makson.exception.ParameterNotFoundException;
+import org.makson.exception.InvalidParameterException;
 import org.makson.services.ExchangeRateService;
 import org.makson.utils.CurrencyValidator;
+import org.makson.utils.DataValidator;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -28,12 +29,12 @@ public class ExchangeServlet extends HttpServlet {
         String toCurrency = req.getParameter("to");
         String amount = req.getParameter("amount");
 
-        if (fromCurrency == null || fromCurrency.isBlank()) {
-            throw new ServletException(new ParameterNotFoundException("The parameter «from» is missing"));
-        } else if (toCurrency == null || toCurrency.isBlank()) {
-            throw new ServletException(new ParameterNotFoundException("The parameter «to» is missing"));
-        } else if (amount == null || amount.isBlank()) {
-            throw new ServletException(new ParameterNotFoundException("The parameter amount is missing"));
+        if (!DataValidator.isValidParameter(fromCurrency)) {
+            throw new ServletException(new InvalidParameterException("Parameter «from» is missing or has invalid value"));
+        } else if (!DataValidator.isValidParameter(toCurrency)) {
+            throw new ServletException(new InvalidParameterException("Parameter «to» is missing or has invalid value"));
+        } else if (!DataValidator.isValidParameter(amount)) {
+            throw new ServletException(new InvalidParameterException("Parameter «amount» is missing or has invalid value"));
         }
 
         if (!CurrencyValidator.isValidCurrencyCode(fromCurrency) || !CurrencyValidator.isValidCurrencyCode(toCurrency)) {
@@ -42,9 +43,10 @@ public class ExchangeServlet extends HttpServlet {
 
         ConvertCurrencyRequestDto convertCurrencyRequestDto;
         try {
+            DataValidator.isValidNumericalValueParameter(amount);
             convertCurrencyRequestDto = new ConvertCurrencyRequestDto(fromCurrency, toCurrency, new BigDecimal(amount));
         } catch (NumberFormatException e) {
-            throw new ServletException(e);
+            throw new ServletException(new NumberFormatException("Invalid value amount"));
         }
 
         try {

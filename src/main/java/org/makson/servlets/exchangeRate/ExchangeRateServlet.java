@@ -7,12 +7,10 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.makson.dto.ExchangeRateRequestDto;
-import org.makson.exception.CurrencyCodeMissingException;
-import org.makson.exception.DataNotFoundException;
-import org.makson.exception.InvalidCurrencyCodeException;
-import org.makson.exception.ParameterNotFoundException;
+import org.makson.exception.*;
 import org.makson.services.ExchangeRateService;
 import org.makson.utils.CurrencyValidator;
+import org.makson.utils.DataValidator;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -56,7 +54,7 @@ public class ExchangeRateServlet extends HttpServlet {
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String parameter = req.getReader().readLine();
         if (parameter == null || !parameter.contains("rate")) {
-            throw new ServletException(new ParameterNotFoundException("The parameter rate is missing"));
+            throw new ServletException(new InvalidParameterException("The parameter rate is missing"));
         }
 
         ExchangeRateRequestDto exchangeRateRequestDto = getExchangeRateRequestDto(req, parameter);
@@ -84,9 +82,11 @@ public class ExchangeRateServlet extends HttpServlet {
         }
 
         try {
-            return new ExchangeRateRequestDto(baseCurrencyCode, targetCurrencyCode, new BigDecimal(parameter.replace("rate=", "")));
+            String rate = parameter.replace("rate=", "");
+            DataValidator.isValidNumericalValueParameter(rate);
+            return new ExchangeRateRequestDto(baseCurrencyCode, targetCurrencyCode, new BigDecimal(rate));
         } catch (NumberFormatException e) {
-            throw new ServletException(e);
+            throw new ServletException(new NumberFormatException("Invalid value rate"));
         }
 
     }

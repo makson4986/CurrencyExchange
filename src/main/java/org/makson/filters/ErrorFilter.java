@@ -34,10 +34,10 @@ public class ErrorFilter extends HttpFilter {
                     handleException(servletResponse, 404, exception.getMessage());
             case DataAlreadyExistException dataAlreadyExistException ->
                     handleException(servletResponse, 409, exception.getMessage());
-            case ParameterNotFoundException parameterNotFoundException ->
+            case InvalidParameterException parameterNotFoundException ->
                     handleException(servletResponse, 400, exception.getMessage());
             case NumberFormatException numberFormatException ->
-                    handleException(servletResponse, 400, "Incorrect value format");
+                    handleException(servletResponse, 400, exception.getMessage());
             case InvalidCurrencyCodeException invalidCurrencyCodeException ->
                     handleException(servletResponse, 400, "This currency does not exist");
             case CurrencyCodeMissingException currencyCodeMissingException ->

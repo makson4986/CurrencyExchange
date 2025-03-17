@@ -7,12 +7,10 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.makson.dto.ExchangeRateRequestDto;
-import org.makson.exception.DataAlreadyExistException;
-import org.makson.exception.DataNotFoundException;
-import org.makson.exception.InvalidCurrencyCodeException;
-import org.makson.exception.ParameterNotFoundException;
+import org.makson.exception.*;
 import org.makson.services.ExchangeRateService;
 import org.makson.utils.CurrencyValidator;
+import org.makson.utils.DataValidator;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -39,12 +37,12 @@ public class ExchangeRatesServlet extends HttpServlet {
         String targetCurrencyCode = req.getParameter("targetCurrencyCode");
         String rate = req.getParameter("rate");
 
-        if (baseCurrencyCode == null || baseCurrencyCode.isBlank()) {
-            throw new ServletException(new ParameterNotFoundException("The parameter baseCurrencyCode is missing"));
-        } else if (targetCurrencyCode == null || targetCurrencyCode.isBlank()) {
-            throw new ServletException(new ParameterNotFoundException("The parameter targetCurrencyCode is missing"));
-        } else if (rate == null || rate.isBlank()) {
-            throw new ServletException(new ParameterNotFoundException("The parameter rate is missing"));
+        if (!DataValidator.isValidParameter(baseCurrencyCode)) {
+            throw new ServletException(new InvalidParameterException("Parameter baseCurrencyCode is missing or has invalid value"));
+        } else if (!DataValidator.isValidParameter(targetCurrencyCode)) {
+            throw new ServletException(new InvalidParameterException("Parameter targetCurrencyCode is missing or has invalid value"));
+        } else if (!DataValidator.isValidParameter(rate)) {
+            throw new ServletException(new InvalidParameterException("Parameter rate is missing or has invalid value"));
         }
 
         if (!CurrencyValidator.isValidCurrencyCode(baseCurrencyCode) || !CurrencyValidator.isValidCurrencyCode(targetCurrencyCode)) {
@@ -53,9 +51,10 @@ public class ExchangeRatesServlet extends HttpServlet {
 
         ExchangeRateRequestDto newExchangeRate;
         try {
+            DataValidator.isValidNumericalValueParameter(rate);
             newExchangeRate = new ExchangeRateRequestDto(baseCurrencyCode, targetCurrencyCode, new BigDecimal(rate));
         } catch (NumberFormatException e) {
-            throw new ServletException(e);
+            throw new ServletException(new NumberFormatException("Invalid value rate"));
         }
 
         try {

@@ -9,9 +9,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.makson.dto.CurrencyRequestDto;
 import org.makson.exception.DataAlreadyExistException;
 import org.makson.exception.InvalidCurrencyCodeException;
-import org.makson.exception.ParameterNotFoundException;
+import org.makson.exception.InvalidParameterException;
 import org.makson.services.CurrencyService;
 import org.makson.utils.CurrencyValidator;
+import org.makson.utils.DataValidator;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -36,12 +37,12 @@ public class CurrenciesServlet extends HttpServlet {
         String code = req.getParameter("code");
         String sign = req.getParameter("sign");
 
-        if (name == null || name.isBlank()) {
-            throw new ServletException(new ParameterNotFoundException("The parameter name is missing"));
-        } else if (code == null || code.isBlank()) {
-            throw new ServletException(new ParameterNotFoundException("The parameter code is missing"));
-        } else if (sign == null || sign.isBlank()) {
-            throw new ServletException(new ParameterNotFoundException("The parameter sign is missing"));
+        if (!DataValidator.isValidParameter(name)) {
+            throw new ServletException(new InvalidParameterException("Parameter name is missing or has an invalid value"));
+        } else if (!DataValidator.isValidParameter(code)) {
+            throw new ServletException(new InvalidParameterException("Parameter code is missing or has an invalid value"));
+        } else if (!DataValidator.isValidParameter(sign)) {
+            throw new ServletException(new InvalidParameterException("Parameter sign is missing or has invalid value"));
         }
 
         if (!CurrencyValidator.isValidCurrencyCode(code)) {

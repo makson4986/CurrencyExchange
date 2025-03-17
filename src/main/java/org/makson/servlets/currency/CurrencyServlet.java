@@ -24,8 +24,8 @@ public class CurrencyServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String currencyCode = req.getPathInfo().substring(1);
 
-        if (currencyCode.isBlank() || currencyCode.length() < 3) {
-            throw new ServletException(new CurrencyCodeMissingException("Currency code is missing in the address"));
+        if (currencyCode.isBlank()) {
+            throw new ServletException(new CurrencyCodeMissingException());
         } else if (!CurrencyValidator.isValidCurrencyCode(currencyCode)) {
             throw new ServletException(new InvalidCurrencyCodeException());
         }
