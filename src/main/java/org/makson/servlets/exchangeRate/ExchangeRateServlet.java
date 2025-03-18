@@ -14,6 +14,7 @@ import org.makson.utils.DataValidator;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.SQLException;
 
 @WebServlet("/exchangeRate/*")
@@ -84,7 +85,7 @@ public class ExchangeRateServlet extends HttpServlet {
         try {
             String rate = parameter.replace("rate=", "");
             DataValidator.isValidNumericalValueParameter(rate);
-            return new ExchangeRateRequestDto(baseCurrencyCode, targetCurrencyCode, new BigDecimal(rate));
+            return new ExchangeRateRequestDto(baseCurrencyCode, targetCurrencyCode, new BigDecimal(rate).setScale(6, RoundingMode.CEILING));
         } catch (NumberFormatException e) {
             throw new ServletException(new NumberFormatException("Invalid value rate"));
         }

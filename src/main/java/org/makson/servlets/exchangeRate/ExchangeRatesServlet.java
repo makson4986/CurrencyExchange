@@ -14,6 +14,7 @@ import org.makson.utils.DataValidator;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.SQLException;
 
 @WebServlet("/exchangeRates")
@@ -45,6 +46,10 @@ public class ExchangeRatesServlet extends HttpServlet {
             throw new ServletException(new InvalidParameterException("Parameter rate is missing or has invalid value"));
         }
 
+        if (baseCurrencyCode.equals(targetCurrencyCode)) {
+            throw new ServletException(new InvalidParameterException("It is impossible to add a course with the same currencies"));
+        }
+
         if (!CurrencyValidator.isValidCurrencyCode(baseCurrencyCode) || !CurrencyValidator.isValidCurrencyCode(targetCurrencyCode)) {
             throw new ServletException(new InvalidCurrencyCodeException());
         }
@@ -52,7 +57,7 @@ public class ExchangeRatesServlet extends HttpServlet {
         ExchangeRateRequestDto newExchangeRate;
         try {
             DataValidator.isValidNumericalValueParameter(rate);
-            newExchangeRate = new ExchangeRateRequestDto(baseCurrencyCode, targetCurrencyCode, new BigDecimal(rate));
+            newExchangeRate = new ExchangeRateRequestDto(baseCurrencyCode, targetCurrencyCode, new BigDecimal(rate).setScale(6, RoundingMode.CEILING));
         } catch (NumberFormatException e) {
             throw new ServletException(new NumberFormatException("Invalid value rate"));
         }

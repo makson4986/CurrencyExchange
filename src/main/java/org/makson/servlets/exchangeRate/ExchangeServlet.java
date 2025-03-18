@@ -16,6 +16,7 @@ import org.makson.utils.DataValidator;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.SQLException;
 
 @WebServlet("/exchange")
@@ -37,6 +38,10 @@ public class ExchangeServlet extends HttpServlet {
             throw new ServletException(new InvalidParameterException("Parameter «amount» is missing or has invalid value"));
         }
 
+        if (fromCurrency.equals(toCurrency)) {
+            throw new ServletException(new InvalidParameterException("Impossible to calculate, currencies are the same"));
+        }
+
         if (!CurrencyValidator.isValidCurrencyCode(fromCurrency) || !CurrencyValidator.isValidCurrencyCode(toCurrency)) {
             throw new ServletException(new InvalidCurrencyCodeException());
         }
@@ -44,7 +49,7 @@ public class ExchangeServlet extends HttpServlet {
         ConvertCurrencyRequestDto convertCurrencyRequestDto;
         try {
             DataValidator.isValidNumericalValueParameter(amount);
-            convertCurrencyRequestDto = new ConvertCurrencyRequestDto(fromCurrency, toCurrency, new BigDecimal(amount));
+            convertCurrencyRequestDto = new ConvertCurrencyRequestDto(fromCurrency, toCurrency, new BigDecimal(amount).setScale(6, RoundingMode.CEILING));
         } catch (NumberFormatException e) {
             throw new ServletException(new NumberFormatException("Invalid value amount"));
         }
